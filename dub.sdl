@@ -1,0 +1,8 @@
+name "dub2meson"
+description "Generates Meson Build system files for DUB pakages"
+authors "Denis Feklushkin"
+copyright "Copyright © 2021, Denis Feklushkin"
+license "MIT"
+
+dependency "dub" version="~>1.26.0"
+subConfiguration "dub" "library-nonet"
