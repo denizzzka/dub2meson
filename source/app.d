@@ -5,11 +5,14 @@ import std.getopt;
 
 struct Cfg
 {
+	import dub.project: PlacementLocation;
+
 	string rootPath = ".";
 	string subprojectsPath = "subprojects";
 	bool annotate;
 	bool bare;
 	bool fetch;
+	PlacementLocation placementLocation = PlacementLocation.user;
 }
 
 void main(string[] args)
@@ -18,6 +21,7 @@ void main(string[] args)
 
 	with(cfg)
 	{
+		//TODO: add --registry=VALUE and --skip-registry=VALUE
 		auto helpInformation = getopt(
 			args,
 			`root`, `Path to operate in instead of the current working dir`, &rootPath,
@@ -25,6 +29,7 @@ void main(string[] args)
 			`annotate`, `Do not perform any action, just print what would be done`, &annotate,
 			"bare", `Read only packages contained in the current directory`, &bare,
 			"fetch-only", `Only fetch all non-optional dependencies`, &fetch,
+			"cache", `Puts any fetched packages in the specified location [local|system|user]`, &placementLocation,
 		);
 
 		if (helpInformation.helpWanted)
@@ -36,7 +41,7 @@ void main(string[] args)
 
 	import common;
 
-	auto dub = getDub(cfg);
+	auto dub = createDub(cfg);
 
 	if(cfg.fetch)
 	{
