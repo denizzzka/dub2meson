@@ -1,51 +1,45 @@
+module app;
+
 import std.stdio;
-import dub.dub;
+import std.getopt;
+
+struct Cfg
+{
+	string rootPath = ".";
+	string subprojectsPath = "subprojects";
+	bool annotate;
+	bool bare;
+	bool fetch;
+}
 
 void main(string[] args)
 {
-	string rootPackagePath = args[1];
+	Cfg cfg;
 
-	//TODO: add package_suppliers and options options
-	auto dub = new Dub(rootPackagePath);
-	//~ dub.dryRun = true;
-
-	dub.rootPath.writeln;
-
-	dub.loadPackage();
-
-	dub.project.name.writeln;
-	dub.project.configurations.writeln;
-
-	dub.fetchAllNonOptionalDependencies;
-
-	foreach(currPkg; dub.project.getTopologicalPackageList)
+	with(cfg)
 	{
-		currPkg.recipe.name.write;
-		" ".write;
-		currPkg.recipe.version_.writeln;
+		auto helpInformation = getopt(
+			args,
+			`root`, `Path to operate in instead of the current working dir`, &rootPath,
+			`subprojects`, `Path to subprojects dir instead of Meson default`, &subprojectsPath,
+			`annotate`, `Do not perform any action, just print what would be done`, &annotate,
+			"bare", `Read only packages contained in the current directory`, &bare,
+			"fetch-only", `Only fetch all non-optional dependencies`, &fetch,
+		);
+
+		if (helpInformation.helpWanted)
+		{
+			defaultGetoptPrinter("Usage:",
+				helpInformation.options);
+		}
+	}
+
+	import common;
+
+	auto dub = getDub(cfg);
+
+	if(cfg.fetch)
+	{
+		dub.fetchAllNonOptionalDependencies;
 	}
 }
-
-void fetchAllNonOptionalDependencies(Dub dub)
-{
-	if(!dub.project.hasAllDependencies)
-	{
-		dub.upgrade(UpgradeOptions.none, dub.project.missingDependencies);
-	}
-}
-
-//~ import dub.package_: Package;
-
-//~ import dub.dependency;
-//~ import dub.dependencyresolver;
-
-	//~ import dub.recipe.packagerecipe;
-
-	//~ import dub.platform: BuildPlatform;
-
-	//~ auto platform = BuildPlatform.any;
-
-	//~ const defConf = dub.project.getDefaultConfiguration(platform, true);
-	//~ defConf.writeln;
-
-	//~ dub.project.getPackageConfigs(platform, defConf, true).writeln;
