@@ -13,6 +13,7 @@ struct Cfg
 	bool bare;
 	bool fetch;
 	PlacementLocation placementLocation = PlacementLocation.user;
+	bool verbose;
 }
 
 void main(string[] args)
@@ -30,6 +31,7 @@ void main(string[] args)
 			"bare", `Read only packages contained in the current directory`, &bare,
 			"fetch-only", `Only fetch all non-optional dependencies`, &fetch,
 			"cache", `Puts any fetched packages in the specified location [local|system|user]`, &placementLocation,
+			`verbose`, `Print diagnostic output`, &verbose,
 		);
 
 		if (helpInformation.helpWanted)
@@ -47,5 +49,5 @@ void main(string[] args)
 	dub.fetchAllNonOptionalDependencies;
 
 	if(!cfg.fetch)
-		dub.createMesonFiles;
+		dub.createMesonFiles(cfg);
 }

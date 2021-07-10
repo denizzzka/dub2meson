@@ -1,12 +1,11 @@
 module common;
 
 import dub.dub;
+import dub.internal.vibecompat.inet.path: NativePath;
 import app;
 
 Dub createDub(in Cfg cfg)
 {
-	import dub.internal.vibecompat.inet.path: NativePath;
-
     //TODO: add package_suppliers and options
 
 	Dub dub;
@@ -35,8 +34,33 @@ void fetchAllNonOptionalDependencies(Dub dub)
         dub.upgrade(UpgradeOptions.none, dub.project.missingDependencies);
 }
 
-void createMesonFiles(Dub dub)
+void createMesonFiles(Dub dub, in Cfg cfg)
 {
+	import std.file: mkdirRecurse;
+
+	const subprojects = NativePath(cfg.subprojectsPath);
+
+    foreach(currPkg; dub.project.getTopologicalPackageList)
+    {
+		if(cfg.verbose)
+		{
+			import std.stdio;
+
+			writefln(`Processing '%s' (%s)`,
+				currPkg.recipe.name,
+				currPkg.recipe.version_,
+			);
+		}
+
+        createMesonFile(currPkg, subprojects);
+    }
+}
+
+import dub.package_: Package;
+
+void createMesonFile(in Package pkg, in NativePath subprojects)
+{
+	//проверить что нету файла мезон.билд
 }
 
 void main_(string rootPath)
