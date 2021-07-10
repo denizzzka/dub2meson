@@ -35,6 +35,10 @@ void fetchAllNonOptionalDependencies(Dub dub)
         dub.upgrade(UpgradeOptions.none, dub.project.missingDependencies);
 }
 
+void createMesonFiles(Dub dub)
+{
+}
+
 void main_(string rootPath)
 {
     import std.stdio;

@@ -36,15 +36,16 @@ void main(string[] args)
 		{
 			defaultGetoptPrinter("Usage:",
 				helpInformation.options);
+
+			return;
 		}
 	}
 
 	import common;
 
 	auto dub = createDub(cfg);
+	dub.fetchAllNonOptionalDependencies;
 
-	if(cfg.fetch)
-	{
-		dub.fetchAllNonOptionalDependencies;
-	}
+	if(!cfg.fetch)
+		dub.createMesonFiles;
 }
