@@ -86,11 +86,11 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 
 	// Adding project()
 	{
-		auto proj = meson_build.rootSection.addSection(`void project`, Bracket.ROUND);
-		proj.addLine(pkg.basePackage.name.quote~`,`);
-		proj.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
+		auto project = meson_build.rootSection.addSection(`void project`, Bracket.ROUND);
+		project.addLine(pkg.basePackage.name.quote~`,`);
+		project.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
 
-		auto defOptions =  proj.addArray(
+		auto defOptions =  project.addArray(
 			`default_options`.keyword,
 			Bracket.SQUARE,
 			[
