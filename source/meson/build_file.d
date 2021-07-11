@@ -115,7 +115,7 @@ private static void addOffset(ref Lines lines, size_t offsetCnt)
 
 class MesonBuildFile
 {
-    private NativePath path;
+    const NativePath path;
     Section rootSection;
 
     this(NativePath filePath)

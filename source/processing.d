@@ -38,7 +38,6 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 {
 	import std.file: mkdirRecurse;
 
-	const subprojects = NativePath(cfg.subprojectsPath);
 	byte[string] processedPackages;
 
     foreach(currPkg; dub.project.getTopologicalPackageList)
@@ -57,7 +56,7 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 				);
 			}
 
-			createMesonFile(currPkg.basePackage, subprojects, cfg);
+			createMesonFile(currPkg.basePackage, cfg);
 			processedPackages[basePkgName] = 1;
 		}
     }
@@ -65,12 +64,14 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 
 import dub.package_: Package;
 
-void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
+void createMesonFile(in Package pkg, in Cfg cfg)
 {
 	import std.stdio;
 	import dub.internal.vibecompat.core.file;
 
-	const NativePath mesonBuildFilePath = pkg.basePackage.path ~ `meson.build`;
+	immutable filename = `meson.build`;
+
+	const NativePath mesonBuildFilePath = pkg.path ~ filename;
 
 	if(mesonBuildFilePath.existsFile)
 	{
@@ -82,7 +83,9 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 
 	import meson.build_file;
 
-	auto meson_build = new MesonBuildFile(mesonBuildFilePath);
+	const subprojects = NativePath(cfg.subprojectsPath);
+
+	auto meson_build = new MesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
 
 	// Adding project()
 	{
@@ -100,6 +103,7 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 		);
 	}
 
+	meson_build.path.writeln;
 	meson_build.writeln;
 
 	//~ pkg.recipe.writeln;
