@@ -4,7 +4,7 @@ import dub.internal.vibecompat.inet.path: NativePath;
 import std.array: Appender;
 import mir.algebraic: Variant;
 
-alias PayloadPiece = Variant!(Section*, string);
+alias PayloadPiece = Variant!(Section*, string, string[string]*);
 alias SectionPayload = Appender!(PayloadPiece[]);
 
 struct Section
@@ -15,6 +15,11 @@ struct Section
     void addLine(string line)
     {
         payload ~= line.PayloadPiece;
+    }
+
+    private void addLines(ref string[string] lines)
+    {
+        payload ~= (&lines).PayloadPiece;
     }
 
     void addKeyVal(string key, string val)
@@ -72,6 +77,13 @@ struct Section
                 ret ~= piece.get!string;
                 ret ~= '\n';
             }
+            else if(piece._is!(string[string]*))
+            {
+                const ss = piece.get!(string[string]*);
+
+                foreach(s; ss.byValue)
+                    ret ~= s ~ '\n';
+            }
             else
             {
                 const s = piece.get!(Section*);
@@ -126,6 +138,17 @@ class MesonBuildFile
     this(NativePath filePath)
     {
         path = filePath;
+    }
+
+    private string[string] dependencies;
+
+    void addDependency(string name)
+    {
+        if(dependencies.length == 0)
+            rootSection.addLines(dependencies);
+
+        dependencies[name] = `%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name);
+
     }
 
     override string toString() const
