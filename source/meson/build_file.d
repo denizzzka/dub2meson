@@ -26,6 +26,23 @@ struct Section
         return s;
     }
 
+    Section* addArray(string firstLine, Bracket br, string[] arr)
+    {
+        char firstBr =  (br == Bracket.SQUARE) ? '[' : '(';
+        char latestBr = (br == Bracket.SQUARE) ? ']' : ')';
+
+        payload ~= (firstLine ~ firstBr).PayloadPiece;
+
+        auto sec = addSection();
+
+        foreach(e; arr)
+            sec.payload ~= (e ~ ',').PayloadPiece;
+
+        payload ~= (`` ~ latestBr).PayloadPiece;
+
+        return sec;
+    }
+
     Lines toLines() const
     {
         Lines ret;
@@ -64,6 +81,12 @@ string quote(string s)
     enforce(!canFind(s, '\''), `Forbidden symbol`);
 
     return format(`'%s'`, s);
+}
+
+enum Bracket : char
+{
+    SQUARE, // [
+    ROUND,  // (
 }
 
 immutable offsetSpaces = `    `;

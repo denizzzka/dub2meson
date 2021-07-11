@@ -92,11 +92,16 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 	auto proj = meson_build.rootSection.addSection();
 	proj.addLine(pkg.basePackage.name.quote~`,`);
 	proj.addLine(`license: `~pkg.basePackage.recipe.license.quote~`,`);
-	proj.addLine(`default_options: [`);
-	auto defOptions = proj.addSection();
-	defOptions.addLine("'default_library=static'".quote);
-	defOptions.addLine("'b_staticpic=false'");
-	proj.addLine(`]`);
+
+	auto defOptions =  proj.addArray(
+		`default_options: `,
+		Bracket.SQUARE,
+		[
+			"default_library=static".quote,
+			"default_library=static".quote,
+		]
+	);
+
 	meson_build.rootSection.addLine(")");
 	//~ meson_build.addPiece(&Section());
 
