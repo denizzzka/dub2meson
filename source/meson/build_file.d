@@ -72,15 +72,22 @@ struct Section
     }
 }
 
+import std.exception: enforce;
+import std.format: format;
+import std.algorithm.searching: canFind;
+
 string quote(string s)
 {
-    import std.algorithm.searching: canFind;
-    import std.exception: enforce;
-    import std.format: format;
-
     enforce(!canFind(s, '\''), `Forbidden symbol`);
 
     return format(`'%s'`, s);
+}
+
+string keyword(string s)
+{
+    enforce(!canFind(s, '\''), `Forbidden symbol`);
+
+    return format(`%s: `, s);
 }
 
 enum Bracket : char

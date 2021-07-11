@@ -91,10 +91,10 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 	meson_build.rootSection.addLine("void project(");
 	auto proj = meson_build.rootSection.addSection();
 	proj.addLine(pkg.basePackage.name.quote~`,`);
-	proj.addLine(`license: `~pkg.basePackage.recipe.license.quote~`,`);
+	proj.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
 
 	auto defOptions =  proj.addArray(
-		`default_options: `,
+		`default_options`.keyword,
 		Bracket.SQUARE,
 		[
 			"default_library=static".quote,
