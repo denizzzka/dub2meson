@@ -91,14 +91,16 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 	{
 		auto project = meson_build.rootSection.addSection(`void project`, Bracket.ROUND);
 		project.addLine(pkg.basePackage.name.quote~`,`);
-		project.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
+		project.addKeyVal(`version`, `>=0.58.1`);
+		project.addKeyVal(`license`, pkg.basePackage.recipe.license);
+		project.addKeyVal(`meson_version`, `>=0.58.1`);
 
 		auto defOptions =  project.addArray(
 			`default_options`.keyword,
 			Bracket.SQUARE,
 			[
-				"default_library=static".quote,
-				"default_library=static".quote,
+				"FIXME".quote,
+				"FIXME".quote,
 			]
 		);
 	}

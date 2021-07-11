@@ -17,6 +17,11 @@ struct Section
         payload ~= line.PayloadPiece;
     }
 
+    void addKeyVal(string key, string val)
+    {
+        addLine(key.keyword~val.quote~`,`);
+    }
+
     Section* addSection()
     {
         auto s = new Section;
@@ -35,7 +40,7 @@ struct Section
 
         auto sec = addSection();
 
-        payload ~= (`` ~ latestBr).PayloadPiece;
+        payload ~= (`` ~ latestBr ~ ',').PayloadPiece;
 
         return sec;
     }
