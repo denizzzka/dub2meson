@@ -88,10 +88,16 @@ void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 
 	auto meson_build = new MesonBuildFile();
 
-	meson_build.addPiece("void project(");
-	meson_build.addPiece(`'`~pkg.basePackage.name~`',`);
-	meson_build.addPiece(`license: '`~pkg.basePackage.recipe.license~`',`);
-	meson_build.addPiece(")");
+	meson_build.rootSection.addLine("void project(");
+	auto proj = meson_build.rootSection.addSection();
+	proj.addLine(`'`~pkg.basePackage.name~`',`);
+	proj.addLine(`license: '`~pkg.basePackage.recipe.license~`',`);
+	proj.addLine(`default_options: [`);
+	auto defOptions = proj.addSection();
+	defOptions.addLine("'default_library=static'");
+	defOptions.addLine("'b_staticpic=false',");
+	proj.addLine(`]`);
+	meson_build.rootSection.addLine(")");
 	//~ meson_build.addPiece(&Section());
 
 	//~ meson_build.addLine("abc", 1);

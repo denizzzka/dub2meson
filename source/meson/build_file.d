@@ -10,8 +10,21 @@ alias SectionPayload = Appender!(PayloadPiece[]);
 struct Section
 {
     SectionPayload payload;
-
     alias payload this;
+
+    void addLine(string line)
+    {
+        payload ~= line.PayloadPiece;
+    }
+
+    Section* addSection()
+    {
+        auto s = new Section;
+
+        payload ~= s.PayloadPiece;
+
+        return s;
+    }
 
     Lines toLines() const
     {
@@ -57,11 +70,6 @@ class MesonBuildFile
     private NativePath path;
 
     Section rootSection;
-
-    void addPiece(T)(T piece)
-    {
-        rootSection.payload ~= piece.PayloadPiece;
-    }
 
     override string toString() const
     {
