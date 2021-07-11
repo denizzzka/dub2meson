@@ -68,44 +68,38 @@ import dub.package_: Package;
 void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 {
 	import std.stdio;
-
-	//~ pkg.basePackage.name.write;
-	//~ pkg.basePackage.path.writeln;
-
 	import dub.internal.vibecompat.core.file;
 
-	const NativePath mesonFile = pkg.basePackage.path ~ `meson.build`;
+	const NativePath mesonBuildFilePath = pkg.basePackage.path ~ `meson.build`;
 
-	if(mesonFile.existsFile)
+	if(mesonBuildFilePath.existsFile)
 	{
 		if(cfg.verbose)
-			writeln("file ", mesonFile, " exists, skipping");
+			writeln("file ", mesonBuildFilePath, " exists, skipping");
 
 		return;
 	}
 
 	import meson.build_file;
 
-	auto meson_build = new MesonBuildFile();
+	auto meson_build = new MesonBuildFile(mesonBuildFilePath);
 
-	meson_build.rootSection.addLine("void project(");
-	auto proj = meson_build.rootSection.addSection();
-	proj.addLine(pkg.basePackage.name.quote~`,`);
-	proj.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
+	// Adding project()
+	{
+		auto proj = meson_build.rootSection.addSection(`void project`, Bracket.ROUND);
+		proj.addLine(pkg.basePackage.name.quote~`,`);
+		proj.addLine(`license`.keyword~pkg.basePackage.recipe.license.quote~`,`);
 
-	auto defOptions =  proj.addArray(
-		`default_options`.keyword,
-		Bracket.SQUARE,
-		[
-			"default_library=static".quote,
-			"default_library=static".quote,
-		]
-	);
+		auto defOptions =  proj.addArray(
+			`default_options`.keyword,
+			Bracket.SQUARE,
+			[
+				"default_library=static".quote,
+				"default_library=static".quote,
+			]
+		);
+	}
 
-	meson_build.rootSection.addLine(")");
-	//~ meson_build.addPiece(&Section());
-
-	//~ meson_build.addLine("abc", 1);
 	meson_build.writeln;
 
 	//~ pkg.recipe.writeln;

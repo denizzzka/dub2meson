@@ -26,7 +26,7 @@ struct Section
         return s;
     }
 
-    Section* addArray(string firstLine, Bracket br, string[] arr)
+    Section* addSection(string firstLine, Bracket br)
     {
         char firstBr =  (br == Bracket.SQUARE) ? '[' : '(';
         char latestBr = (br == Bracket.SQUARE) ? ']' : ')';
@@ -35,10 +35,17 @@ struct Section
 
         auto sec = addSection();
 
+        payload ~= (`` ~ latestBr).PayloadPiece;
+
+        return sec;
+    }
+
+    Section* addArray(string firstLine, Bracket br, string[] arr)
+    {
+        auto sec = addSection(firstLine, br);
+
         foreach(e; arr)
             sec.payload ~= (e ~ ',').PayloadPiece;
-
-        payload ~= (`` ~ latestBr).PayloadPiece;
 
         return sec;
     }
@@ -109,8 +116,12 @@ private static void addOffset(ref Lines lines, size_t offsetCnt)
 class MesonBuildFile
 {
     private NativePath path;
-
     Section rootSection;
+
+    this(NativePath filePath)
+    {
+        path = filePath;
+    }
 
     override string toString() const
     {
