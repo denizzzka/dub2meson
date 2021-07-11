@@ -39,69 +39,63 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 	import std.file: mkdirRecurse;
 
 	const subprojects = NativePath(cfg.subprojectsPath);
+	byte[string] processedPackages;
 
     foreach(currPkg; dub.project.getTopologicalPackageList)
     {
-		if(cfg.verbose)
+		const basePkgName = currPkg.basePackage.name;
+
+		if(basePkgName !in processedPackages)
 		{
-			import std.stdio;
+			if(cfg.verbose)
+			{
+				import std.stdio;
 
-			writefln(`Processing '%s' (%s)`,
-				currPkg.recipe.name,
-				currPkg.recipe.version_,
-			);
+				writefln(`Processing '%s' (%s)`,
+					basePkgName,
+					currPkg.basePackage.recipe.version_,
+				);
+			}
+
+			createMesonFile(currPkg.basePackage, subprojects, cfg);
+			processedPackages[basePkgName] = 1;
 		}
-
-        createMesonFile(currPkg, subprojects);
     }
 }
 
 import dub.package_: Package;
 
-void createMesonFile(in Package pkg, in NativePath subprojects)
+void createMesonFile(in Package pkg, in NativePath subprojects, in Cfg cfg)
 {
-	//проверить что нету файла мезон.билд
+	import std.stdio;
+
+	//~ pkg.basePackage.name.write;
+	//~ pkg.basePackage.path.writeln;
+
+	import dub.internal.vibecompat.core.file;
+
+	const NativePath mesonFile = pkg.basePackage.path ~ `meson.build`;
+
+	if(mesonFile.existsFile)
+	{
+		if(cfg.verbose)
+			writeln("file ", mesonFile, " exists, skipping");
+
+		return;
+	}
+
+	import meson.build_file;
+
+	auto meson_build = new MesonBuildFile();
+
+	meson_build.addPiece("void project(");
+	meson_build.addPiece(`'`~pkg.basePackage.name~`',`);
+	meson_build.addPiece(`license: '`~pkg.basePackage.recipe.license~`',`);
+	meson_build.addPiece(")");
+	//~ meson_build.addPiece(&Section());
+
+	//~ meson_build.addLine("abc", 1);
+	meson_build.writeln;
+
+	//~ pkg.recipe.writeln;
 }
-
-void main_(string rootPath)
-{
-    import std.stdio;
-
-    string rootPackagePath = ".";
-
-    //TODO: add package_suppliers and options options
-    auto dub = new Dub(rootPath);
-    //~ dub.dryRun = true;
-
-    dub.rootPath.writeln;
-
-    dub.loadPackage();
-
-    dub.project.name.writeln;
-    dub.project.configurations.writeln;
-
-    dub.fetchAllNonOptionalDependencies;
-
-    foreach(currPkg; dub.project.getTopologicalPackageList)
-    {
-        currPkg.recipe.name.write;
-        " ".write;
-        currPkg.recipe.version_.writeln;
-    }
-}
-
-//~ import dub.package_: Package;
-
-//~ import dub.dependency;
-//~ import dub.dependencyresolver;
-
-    //~ import dub.recipe.packagerecipe;
-
-    //~ import dub.platform: BuildPlatform;
-
-    //~ auto platform = BuildPlatform.any;
-
-    //~ const defConf = dub.project.getDefaultConfiguration(platform, true);
-    //~ defConf.writeln;
-
-    //~ dub.project.getPackageConfigs(platform, defConf, true).writeln;
