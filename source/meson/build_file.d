@@ -55,6 +55,17 @@ struct Section
     }
 }
 
+string quote(string s)
+{
+    import std.algorithm.searching: canFind;
+    import std.exception: enforce;
+    import std.format: format;
+
+    enforce(!canFind(s, '\''), `Forbidden symbol`);
+
+    return format(`'%s'`, s);
+}
+
 immutable offsetSpaces = `    `;
 
 alias Lines = Appender!string;
