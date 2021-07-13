@@ -4,7 +4,7 @@ import dub.internal.vibecompat.inet.path: NativePath;
 import std.array: Appender;
 import mir.algebraic: Variant;
 
-alias PayloadPiece = Variant!(Section*, string, string[string]*);
+alias PayloadPiece = Variant!(Section*, string);
 alias SectionPayload = Appender!(PayloadPiece[]);
 
 struct Section
@@ -17,10 +17,10 @@ struct Section
         payload ~= line.PayloadPiece;
     }
 
-    private void addLines(ref string[string] lines)
-    {
-        payload ~= (&lines).PayloadPiece;
-    }
+    //~ private void addLines(ref string[string] lines)
+    //~ {
+        //~ payload ~= (&lines).PayloadPiece;
+    //~ }
 
     void addKeyVal(string key, string val)
     {
@@ -77,13 +77,13 @@ struct Section
                 ret ~= piece.get!string;
                 ret ~= '\n';
             }
-            else if(piece._is!(string[string]*))
-            {
-                const ss = piece.get!(string[string]*);
+            //~ else if(piece._is!(string[string]*))
+            //~ {
+                //~ const ss = piece.get!(string[string]*);
 
-                foreach(s; ss.byValue)
-                    ret ~= s ~ '\n';
-            }
+                //~ foreach(s; ss.byValue)
+                    //~ ret ~= s ~ '\n';
+            //~ }
             else
             {
                 const s = piece.get!(Section*);
@@ -142,7 +142,7 @@ class MesonBuildFile
 
     private Section*[string] subprojects;
 
-    void addSubproject(string name, string[] default_options, string version_)
+    private void addSubproject(string name, string[] default_options, string version_)
     {
         if(name in subprojects)
             return;
@@ -167,13 +167,12 @@ class MesonBuildFile
 
     void addDependency(string name)
     {
+        if(name in dependencies)
+            return;
+
         addSubproject(name, null, null);
-
-        if(dependencies.length == 0)
-            rootSection.addLines(dependencies);
-
-        dependencies[name] = `%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name);
-
+        rootSection.addLine(`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name));
+        dependencies[name] = name;
     }
 
     override string toString() const
