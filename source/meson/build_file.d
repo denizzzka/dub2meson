@@ -17,11 +17,6 @@ struct Section
         payload ~= line.PayloadPiece;
     }
 
-    //~ private void addLines(ref string[string] lines)
-    //~ {
-        //~ payload ~= (&lines).PayloadPiece;
-    //~ }
-
     void addKeyVal(string key, string val)
     {
         addLine(key.keyword~val.quote~`,`);
