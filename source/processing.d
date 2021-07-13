@@ -95,8 +95,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 		project.addKeyVal(`version`, pkg.basePackage.recipe.version_);
 		project.addKeyVal(`license`, pkg.basePackage.recipe.license);
 		project.addKeyVal(`meson_version`, `>=0.58.1`);
-
-		auto defOptions =  project.addArray(
+		project.addArray(
 			`default_options`.keyword,
 			Bracket.SQUARE,
 			[

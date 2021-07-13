@@ -140,10 +140,35 @@ class MesonBuildFile
         path = filePath;
     }
 
+    private Section*[string] subprojects;
+
+    void addSubproject(string name, string[] default_options, string version_)
+    {
+        if(name in subprojects)
+            return;
+
+        auto s = rootSection.addSection(name~`_sub = subproject`, Bracket.ROUND);
+        s.addLine(name.quote~`,`);
+
+        if(version_ !is null)
+            s.addKeyVal(`version`, version_);
+
+        if(default_options !is null)
+            s.addArray(
+                `default_options`.keyword,
+                Bracket.SQUARE,
+                default_options
+            );
+
+        subprojects[name] = s;
+    }
+
     private string[string] dependencies;
 
     void addDependency(string name)
     {
+        addSubproject(name, null, null);
+
         if(dependencies.length == 0)
             rootSection.addLines(dependencies);
 
