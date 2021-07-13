@@ -77,13 +77,6 @@ struct Section
                 ret ~= piece.get!string;
                 ret ~= '\n';
             }
-            //~ else if(piece._is!(string[string]*))
-            //~ {
-                //~ const ss = piece.get!(string[string]*);
-
-                //~ foreach(s; ss.byValue)
-                    //~ ret ~= s ~ '\n';
-            //~ }
             else
             {
                 const s = piece.get!(Section*);
@@ -163,7 +156,7 @@ class MesonBuildFile
         subprojects[name] = s;
     }
 
-    private string[string] dependencies;
+    private bool[string] dependencies;
 
     void addDependency(string name)
     {
@@ -172,7 +165,7 @@ class MesonBuildFile
 
         addSubproject(name, null, null);
         rootSection.addLine(`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name));
-        dependencies[name] = name;
+        dependencies[name] = true;
     }
 
     override string toString() const
