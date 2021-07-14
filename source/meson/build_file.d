@@ -142,15 +142,18 @@ class MesonBuildFile
 
     private Section*[string] namedArrays;
 
-    void addFilesToFilesArrays(string arrName, string[] elems)
+    void addFilesToFilesArrays(bool isFiles, string arrName, string[] elems)
     {
         import std.algorithm.iteration: map;
         import std.algorithm.sorting: sort;
         import std.array: array;
 
+        const arrType = isFiles ? ` = files` : ` =`;
+        const brckType = isFiles ? Bracket.ROUND : Bracket.SQUARE;
+
         auto arrSection = namedArrays.require(
             arrName,
-            rootSection.addArray(arrName~` = files`, Bracket.ROUND, [])
+            rootSection.addArray(arrName ~ arrType, brckType, [])
         );
 
         auto arr = elems.map!(a => a.quote~`,`).array.sort;

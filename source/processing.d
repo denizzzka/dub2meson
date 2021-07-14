@@ -106,15 +106,29 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 	}
 
 	//Collect source files
+	void collect(in string[][string] searchPaths, bool isFiles, string typeName, string wildcard, bool isSourceFiles = false)
 	{
 		import dub_stuff.collect: collectFiles;
 
-		auto collected = collectFiles(pkg.path, pkg.recipe.buildSettings.sourcePaths, "*.d");
+		auto collected = collectFiles(pkg.path, searchPaths, wildcard);
 
-		//~ writeln("Collected sources: ", srcs);
+		foreach(suffix, files; pkg.recipe.buildSettings.sourceFiles)
+			collected[suffix] ~= files;
 
 		foreach(suffix, paths; collected)
-			meson_build.addFilesToFilesArrays(suffix~"_src", paths);
+		{
+			const underscore = (suffix == "") ? "" : "_";
+
+			meson_build.addFilesToFilesArrays(isFiles, suffix~underscore~typeName, paths);
+		}
+	}
+
+	{
+		const bs = pkg.recipe.buildSettings;
+
+		collect(bs.importPaths, true, `include`, `*.{d,di}`);
+		collect(bs.sourcePaths, true, `sources`, `*.d`, true);
+		collect(bs.stringImportPaths, false, `string_imports`, "*");
 	}
 
 	// Loop over configurations
