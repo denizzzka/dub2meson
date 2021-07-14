@@ -106,7 +106,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 	}
 
 	//Collect source files
-	void collect(in string[][string] searchPaths, bool isFiles, string typeName, string wildcard, bool isSourceFiles = false)
+	void collect(in string[][string] searchPaths, MesonBuildFile.CollectType ct, string typeName, string wildcard, bool isSourceFiles = false)
 	{
 		import dub_stuff.collect: collectFiles;
 
@@ -119,8 +119,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 		{
 			const underscore = (suffix == "") ? "" : "_";
 
-			// Is a directories?
-			if(!isFiles)
+			if(ct == MesonBuildFile.CollectType.IncludeDirs)
 			{
 				// remove file part and '/' from paths
 				foreach(ref p; paths)
@@ -133,16 +132,16 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 
 			paths = paths.sort.uniq.array;
 
-			meson_build.addFilesToFilesArrays(isFiles, suffix~underscore~typeName, paths);
+			meson_build.addFilesToFilesArrays(ct, suffix~underscore~typeName, paths);
 		}
 	}
 
 	{
 		const bs = pkg.recipe.buildSettings;
 
-		collect(bs.importPaths, false, `include`, `*.{d,di}`);
-		collect(bs.sourcePaths, true, `sources`, `*.d`, true);
-		collect(bs.stringImportPaths, false, `string_imports`, "*");
+		collect(bs.importPaths, MesonBuildFile.CollectType.IncludeDirs, `include`, `*.{d,di}`);
+		collect(bs.sourcePaths, MesonBuildFile.CollectType.Files, `sources`, `*.d`, true);
+		collect(bs.stringImportPaths, MesonBuildFile.CollectType.StringArray, `string_imports`, "*");
 	}
 
 	// Loop over configurations
