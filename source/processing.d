@@ -153,6 +153,18 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 					return;
 			}
 
+			//Collect files
+			{
+				import dub_stuff.collect: collectFiles;
+
+				string[][string] remove_me;
+				remove_me[""] = ["abc/def"];
+
+				auto files = collectFiles(pkg, remove_me, "*.d");
+
+				files.writeln;
+			}
+
 			// processExecOrLib can process both executable() and library():
 			if(bo.buildExecutable)
 				processExecOrLib(meson_build, conf, pkg, bo);
@@ -177,6 +189,15 @@ struct BuildOptions
 	bool buildLibrary;
 	bool forceDynamicLib;
 	bool forceStaticLib;
+}
+
+void processSourceFiles(MesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
+{
+	import dub_stuff.collect;
+
+	conf.writeln;
+
+	//~ auto tree = collectFiles(srcPaths, "*.d");
 }
 
 import dub.recipe.packagerecipe: ConfigurationInfo;
