@@ -127,11 +127,21 @@ class MesonBuildFile
     {
         path = filePath;
     }
+
+    private MesonBuildFile[] children;
+
+    MesonBuildFile createOrGetMesonBuildFile(NativePath filePath)
+    {
+        auto ret = createOrGetMesonBuildFile(filePath);
+        children ~= ret;
+
+        return ret;
+    }
 }
 
 private static MesonBuildFile[NativePath] allMesonBuildFiles;
 
-MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
+private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 {
     MesonBuildFile* bf = filePath in allMesonBuildFiles;
 
