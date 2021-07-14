@@ -115,9 +115,23 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 		foreach(suffix, files; pkg.recipe.buildSettings.sourceFiles)
 			collected[suffix] ~= files;
 
-		foreach(suffix, paths; collected)
+		foreach(suffix, ref paths; collected)
 		{
 			const underscore = (suffix == "") ? "" : "_";
+
+			// Is a directories?
+			if(!isFiles)
+			{
+				// remove file part and '/' from paths
+				foreach(ref p; paths)
+					p = NativePath(p).parentPath.toString[0 .. $-1];
+			}
+
+			import std.algorithm.sorting: sort;
+			import std.algorithm.iteration: uniq;
+			import std.array: array;
+
+			paths = paths.sort.uniq.array;
 
 			meson_build.addFilesToFilesArrays(isFiles, suffix~underscore~typeName, paths);
 		}
@@ -126,7 +140,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 	{
 		const bs = pkg.recipe.buildSettings;
 
-		collect(bs.importPaths, true, `include`, `*.{d,di}`);
+		collect(bs.importPaths, false, `include`, `*.{d,di}`);
 		collect(bs.sourcePaths, true, `sources`, `*.d`, true);
 		collect(bs.stringImportPaths, false, `string_imports`, "*");
 	}
