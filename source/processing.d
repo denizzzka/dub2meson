@@ -105,6 +105,15 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 		);
 	}
 
+	//Collect source files
+	{
+		import dub_stuff.collect: collectFiles;
+
+		auto srcs = collectFiles(pkg.path, pkg.recipe.buildSettings.sourcePaths, "*.d");
+
+		writeln("Collected sources: ", srcs);
+	}
+
 	// Loop over configurations
 	{
 		foreach(const conf; pkg.recipe.configurations)
@@ -151,18 +160,6 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 				default:
 					enforce(false, pkg.basePackage.name~`: unsupported target type: `~conf.buildSettings.targetType.to!string);
 					return;
-			}
-
-			//Collect files
-			{
-				import dub_stuff.collect: collectFiles;
-
-				string[][string] remove_me;
-				remove_me[""] = ["abc/def"];
-
-				auto files = collectFiles(pkg, remove_me, "*.d");
-
-				files.writeln;
 			}
 
 			// processExecOrLib can process both executable() and library():

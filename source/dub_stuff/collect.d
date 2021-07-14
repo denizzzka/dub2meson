@@ -9,10 +9,8 @@ import std.file: dirEntries, SpanMode;
 import dub.internal.vibecompat.inet.path: NativePath, toNativeString, relativeTo;
 import dub.package_: Package;
 
-string[][string] collectFiles(in Package pkg, in string[][string] paths_map, string pattern)
+string[][string] collectFiles(NativePath base_path, in string[][string] paths_map, string pattern)
 {
-	auto base_path = pkg.path;
-
 	string[][string] files;
 
 	import std.typecons : Nullable;
@@ -22,7 +20,7 @@ string[][string] collectFiles(in Package pkg, in string[][string] paths_map, str
 			enforce(!spath.empty, "Paths must not be empty strings.");
 			auto path = NativePath(spath);
 
-			if (!path.absolute) path = base_path ~ path; // FIXME
+			if (!path.absolute) path = base_path ~ path;
 
 			auto pstr = path.toNativeString();
 			foreach (d; dirEntries(pstr, pattern, SpanMode.depth)) {
