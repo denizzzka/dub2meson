@@ -246,8 +246,6 @@ void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf,
     else
         assert(false);
 
-    //~ conf.writeln;
-
     import std.algorithm.iteration: map;
     import std.array: array;
 
@@ -261,11 +259,12 @@ void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf,
         [conf.name.quote],
     );
 
-    auto deps = exeOrLib.addArray(
-        `dependencies`.keyword,
-        Bracket.SQUARE,
-        depsList.map!(a => a~`_dep`).array
-    );
-
-    writeln("dependencies >>>>>>>>>>>> ", pkg.getDependencies(conf.name));
+    if(depsList.length != 0)
+    {
+        auto deps = exeOrLib.addArray(
+            `dependencies`.keyword,
+            Bracket.SQUARE,
+            depsList.map!(a => a~`_dep`).array
+        );
+    }
 }
