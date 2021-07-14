@@ -85,7 +85,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 
 	const subprojects = NativePath(cfg.subprojectsPath);
 
-	auto meson_build = new MesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
+	auto meson_build = new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
 
 	// Adding project()
 	{
@@ -199,7 +199,7 @@ void processSourceFiles(MesonBuildFile meson_build, in ConfigurationInfo conf, i
 
 import dub.recipe.packagerecipe: ConfigurationInfo;
 
-void processExecOrLib(MesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
+void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
 {
 	string name;
 	string suffix;

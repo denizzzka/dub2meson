@@ -121,11 +121,20 @@ private static void addOffset(ref Lines lines, size_t offsetCnt)
 class MesonBuildFile
 {
     const NativePath path;
-    Section rootSection;
 
     this(NativePath filePath)
     {
         path = filePath;
+    }
+}
+
+class RootMesonBuildFile : MesonBuildFile
+{
+    Section rootSection;
+
+    this(NativePath filePath)
+    {
+        super(filePath);
     }
 
     private Section*[string] subprojects;
