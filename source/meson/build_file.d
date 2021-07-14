@@ -121,20 +121,37 @@ private static void addOffset(ref Lines lines, size_t offsetCnt)
 class MesonBuildFile
 {
     const NativePath path;
+    Section rootSection;
 
-    this(NativePath filePath)
+    private this(NativePath filePath)
     {
         path = filePath;
     }
 }
 
+private static MesonBuildFile[NativePath] allMesonBuildFiles;
+
+MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
+{
+    MesonBuildFile* bf = filePath in allMesonBuildFiles;
+
+    if(bf !is null)
+        return *bf;
+    else
+    {
+        MesonBuildFile n = new MesonBuildFile(filePath);
+        allMesonBuildFiles[filePath] = n;
+        return n;
+    }
+}
+
 class RootMesonBuildFile : MesonBuildFile
 {
-    Section rootSection;
-
     this(NativePath filePath)
     {
         super(filePath);
+
+        allMesonBuildFiles[filePath] = this;
     }
 
     private Section*[string] subprojects;
