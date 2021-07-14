@@ -65,6 +65,7 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 
 import dub.package_: Package;
 import meson.build_file;
+import meson.primitives;
 import std.stdio;
 
 void createMesonFile(in Package pkg, in Cfg cfg)
