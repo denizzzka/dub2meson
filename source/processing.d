@@ -226,15 +226,6 @@ struct BuildOptions
     bool forceStaticLib;
 }
 
-void processSourceFiles(MesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
-{
-    import dub_stuff.collect;
-
-    conf.writeln;
-
-    //~ auto tree = collectFiles(srcPaths, "*.d");
-}
-
 import dub.recipe.packagerecipe: ConfigurationInfo;
 
 void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
