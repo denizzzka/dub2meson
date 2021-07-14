@@ -368,10 +368,10 @@ class RootMesonBuildFile : MesonBuildFile
         if(name in subprojects)
             return;
 
-        auto s = new Func(
+        auto s = rootSection.addFunc(
             name~`_sub = subproject`,
             [name.quote],
-            [`version`: version_],
+            version_ ? [`version`: version_] : null,
         );
 
         if(default_options !is null)
