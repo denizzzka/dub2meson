@@ -89,12 +89,19 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 
     // Adding project()
     {
-        auto project = meson_build.rootSection.addSection(`project`, Bracket.ROUND);
-        project.addLine(pkg.basePackage.name.quote~`,`);
-        project.addLine(`['d'],`);
-        project.addKeyVal(`version`, pkg.basePackage.recipe.version_);
-        project.addKeyVal(`license`, pkg.basePackage.recipe.license);
-        project.addKeyVal(`meson_version`, `>=0.58.1`);
+        auto project = meson_build.rootSection.addFunc(
+            `project`,
+            [
+                pkg.basePackage.name.quote,
+                `['d']`,
+            ],
+            [
+                `version`: pkg.basePackage.recipe.version_,
+                `license`: pkg.basePackage.recipe.license,
+                `meson_version`: `>=0.58.1`,
+            ]
+        );
+
         project.addArray(
             `default_options`.keyword,
             Bracket.SQUARE,
@@ -257,8 +264,10 @@ void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf,
     foreach(ref e; depsList)
         meson_build.addDependency(e);
 
-    auto exeOrLib = meson_build.rootSection.addSection(conf.name~suffix~` = `~name, Bracket.ROUND);
-    exeOrLib.addLine(conf.name.quote~`,`);
+    auto exeOrLib = meson_build.rootSection.addFunc(
+        conf.name~suffix~` = `~name,
+        [conf.name.quote],
+    );
 
     auto deps = exeOrLib.addArray(
         `dependencies`.keyword,

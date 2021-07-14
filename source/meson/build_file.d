@@ -2,28 +2,61 @@ module meson.build_file;
 
 import dub.internal.vibecompat.inet.path: NativePath;
 import std.array: Appender;
-import mir.algebraic: Variant;
-
-//~ alias PayloadPiece = Variant!(Section*, string);
-//~ alias SectionPayload = Appender!(PayloadPiece[]);
 
 abstract class PayloadPiece_
 {
-    Lines toLines(ref Lines ret, in size_t offsetCnt) const;
+    ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const;
 }
 
-class SortedLines : PayloadPiece_
+class UnsortedLines : PayloadPiece_
 {
-    private string[] lines;
+    protected string[] lines;
 
-    override Lines toLines(ref Lines ret, in size_t offsetCnt) const
+    this(string[] l = null)
+    {
+        lines = l;
+    }
+
+    void addLine(string l)
+    {
+        lines ~= l;
+    }
+
+    void addLines(string[] l)
+    {
+        lines ~= l;
+    }
+
+    override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
+    {
+        foreach(e; lines)
+        {
+            ret.addOffset(offsetCnt);
+            ret ~= e ~ ",\n";
+        }
+
+        return ret;
+    }
+}
+
+class SortedLines : UnsortedLines
+{
+    this(string[] l = null)
+    {
+        lines = l;
+    }
+
+    override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
     {
         import std.algorithm.sorting: sort;
 
         string[] copy = lines.dup;
 
         foreach(e; copy.sort)
-            ret ~= e ~ ',';
+        {
+            ret.addOffset(offsetCnt);
+            ret ~= e ~ ",\n";
+        }
 
         return ret;
     }
@@ -33,24 +66,94 @@ class Section_ : PayloadPiece_
 {
     private PayloadPiece_[] payload;
 
-    PayloadPiece_ addSection(PayloadPiece_ pp)
+    PayloadPiece_ add(PayloadPiece_ pp)
     {
         payload ~= pp;
 
         return pp;
     }
 
-    override Lines toLines(ref Lines ret, in size_t offsetCnt) const
+    Func addFunc(string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    {
+        auto ret = new Func(firstLine, unnamed, keyVal);
+
+        add(ret);
+
+        return ret;
+    }
+
+    override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
     {
         foreach(piece; payload)
-            piece.toLines(ret, offsetCnt + 1);
+            piece.toLines(ret, offsetCnt);
 
         return ret;
     }
 }
 
-class Statement : Section_
+class OffsetSection : Section_
 {
+    override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
+    {
+        return super.toLines(ret, offsetCnt + 1);
+    }
+}
+
+class Statement : OffsetSection
+{
+    string firstLine;
+    Bracket bracket;
+
+    private this(string _firstLine, Bracket br)
+    {
+        firstLine= _firstLine;
+        bracket = br;
+    }
+
+    override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
+    {
+        char firstBr =  (bracket == Bracket.SQUARE) ? '[' : '(';
+        char latestBr = (bracket == Bracket.SQUARE) ? ']' : ')';
+
+        ret.addOffset(offsetCnt);
+        ret ~= firstLine ~ firstBr ~ '\n';
+
+        super.toLines(ret, offsetCnt);
+
+        ret.addOffset(offsetCnt);
+        ret ~= latestBr ~ "\n";
+
+        return ret;
+    }
+}
+
+class Func : Statement
+{
+    private this(string firstLine, string[] unnamed, string[string] keyVal)
+    {
+        super(firstLine, Bracket.ROUND);
+
+        auto lines = new UnsortedLines(unnamed);
+        super.add(lines);
+
+        auto sorted = new SortedLines();
+        super.add(sorted);
+
+        foreach(k, v; keyVal)
+            sorted.addLine(k.keyword~v.quote);
+    }
+}
+
+SortedLines addArray(Section_ sec, string firstLine, Bracket br, string[] arr)
+{
+    import std.algorithm.sorting: sort;
+
+    auto stmnt = new Statement(firstLine, br);
+    auto lines = new SortedLines(arr);
+    stmnt.add = lines;
+    sec.add = stmnt;
+
+    return lines;
 }
 
 //~ struct Section
@@ -187,7 +290,7 @@ class MesonBuildFile
         return ret;
     }
 
-    private Section_[string] namedArrays;
+    private SortedLines[string] namedArrays;
 
     enum CollectType
     {
@@ -227,10 +330,9 @@ class MesonBuildFile
             rootSection.addArray(arrName ~ arrDirective, brckType, [])
         );
 
-        auto arr = elems.map!(a => a.quote~`,`).array.sort;
+        auto arr = elems.map!(a => a.quote).array.sort.array;
 
-        foreach(e; arr)
-            (*arrSection).addLine(e);
+        arrSection.addLines(arr);
     }
 }
 
@@ -266,11 +368,11 @@ class RootMesonBuildFile : MesonBuildFile
         if(name in subprojects)
             return;
 
-        auto s = rootSection.addSection(name~`_sub = subproject`, Bracket.ROUND);
-        s.addLine(name.quote~`,`);
-
-        if(version_ !is null)
-            s.addKeyVal(`version`, version_);
+        auto s = new Func(
+            name~`_sub = subproject`,
+            [name.quote],
+            [`version`: version_],
+        );
 
         if(default_options !is null)
             s.addArray(
@@ -290,12 +392,14 @@ class RootMesonBuildFile : MesonBuildFile
             return;
 
         addSubproject(name, null, null);
-        rootSection.addLine(`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name));
+        rootSection.add = new UnsortedLines([`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name)]);
         dependencies[name] = true;
     }
 
     override string toString() const
     {
-        return rootSection.toLines.data;
+        Lines ret;
+
+        return rootSection.toLines(ret, 0).data;
     }
 }
