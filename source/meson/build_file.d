@@ -45,11 +45,13 @@ struct Section
         return sec;
     }
 
-    Section* addArray(string firstLine, Bracket br, in string[] arr)
+    Section* addArray(string firstLine, Bracket br, string[] arr)
     {
+        import std.algorithm.sorting: sort;
+
         auto sec = addSection(firstLine, br);
 
-        foreach(e; arr)
+        foreach(e; arr.sort)
             sec.payload ~= (e ~ ',').PayloadPiece;
 
         return sec;
