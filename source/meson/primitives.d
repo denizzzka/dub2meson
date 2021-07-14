@@ -12,7 +12,7 @@ class UnsortedLines : PayloadPiece_
 {
     protected string[] lines;
 
-    this(string[] l = null)
+    package this(string[] l = null)
     {
         lines = l;
     }
@@ -41,7 +41,7 @@ class UnsortedLines : PayloadPiece_
 
 class SortedLines : UnsortedLines
 {
-    this(string[] l = null)
+    package this(string[] l = null)
     {
         lines = l;
     }
