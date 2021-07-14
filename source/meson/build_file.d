@@ -4,87 +4,133 @@ import dub.internal.vibecompat.inet.path: NativePath;
 import std.array: Appender;
 import mir.algebraic: Variant;
 
-alias PayloadPiece = Variant!(Section*, string);
-alias SectionPayload = Appender!(PayloadPiece[]);
+//~ alias PayloadPiece = Variant!(Section*, string);
+//~ alias SectionPayload = Appender!(PayloadPiece[]);
 
-struct Section
+abstract class PayloadPiece_
 {
-    SectionPayload payload;
-    alias payload this;
+    Lines toLines(ref Lines ret, in size_t offsetCnt) const;
+}
 
-    void addLine(string line)
-    {
-        payload ~= line.PayloadPiece;
-    }
+class SortedLines : PayloadPiece_
+{
+    private string[] lines;
 
-    void addKeyVal(string key, string val)
-    {
-        addLine(key.keyword~val.quote~`,`);
-    }
-
-    Section* addSection()
-    {
-        auto s = new Section;
-
-        payload ~= s.PayloadPiece;
-
-        return s;
-    }
-
-    Section* addSection(string firstLine, Bracket br)
-    {
-        char firstBr =  (br == Bracket.SQUARE) ? '[' : '(';
-        char latestBr = (br == Bracket.SQUARE) ? ']' : ')';
-
-        payload ~= (firstLine ~ firstBr).PayloadPiece;
-
-        auto sec = addSection();
-
-        payload ~= (`` ~ latestBr ~ ',').PayloadPiece;
-
-        return sec;
-    }
-
-    Section* addArray(string firstLine, Bracket br, string[] arr)
+    override Lines toLines(ref Lines ret, in size_t offsetCnt) const
     {
         import std.algorithm.sorting: sort;
 
-        auto sec = addSection(firstLine, br);
+        string[] copy = lines.dup;
 
-        foreach(e; arr.sort)
-            sec.payload ~= (e ~ ',').PayloadPiece;
-
-        return sec;
-    }
-
-    Lines toLines() const
-    {
-        Lines ret;
-
-        return toLines(ret, 0);
-    }
-
-    Lines toLines(ref Lines ret, in size_t offsetCnt) const
-    {
-        foreach(piece; payload)
-        {
-            if(piece._is!string)
-            {
-                ret.addOffset(offsetCnt);
-                ret ~= piece.get!string;
-                ret ~= '\n';
-            }
-            else
-            {
-                const s = piece.get!(Section*);
-
-                s.toLines(ret, offsetCnt + 1);
-            }
-        }
+        foreach(e; copy.sort)
+            ret ~= e ~ ',';
 
         return ret;
     }
 }
+
+class Section_ : PayloadPiece_
+{
+    private PayloadPiece_[] payload;
+
+    PayloadPiece_ addSection(PayloadPiece_ pp)
+    {
+        payload ~= pp;
+
+        return pp;
+    }
+
+    override Lines toLines(ref Lines ret, in size_t offsetCnt) const
+    {
+        foreach(piece; payload)
+            piece.toLines(ret, offsetCnt + 1);
+
+        return ret;
+    }
+}
+
+class Statement : Section_
+{
+}
+
+//~ struct Section
+//~ {
+    //~ SectionPayload payload;
+    //~ alias payload this;
+
+    //~ void addLine(string line)
+    //~ {
+        //~ payload ~= line.PayloadPiece;
+    //~ }
+
+    //~ void addKeyVal(string key, string val)
+    //~ {
+        //~ addLine(key.keyword~val.quote~`,`);
+    //~ }
+
+    //~ Section* addSection()
+    //~ {
+        //~ auto s = new Section;
+
+        //~ payload ~= s.PayloadPiece;
+
+        //~ return s;
+    //~ }
+
+    //~ Section* addSection(string firstLine, Bracket br)
+    //~ {
+        //~ char firstBr =  (br == Bracket.SQUARE) ? '[' : '(';
+        //~ char latestBr = (br == Bracket.SQUARE) ? ']' : ')';
+
+        //~ payload ~= (firstLine ~ firstBr).PayloadPiece;
+
+        //~ auto sec = addSection();
+
+        //~ payload ~= (`` ~ latestBr ~ ',').PayloadPiece;
+
+        //~ return sec;
+    //~ }
+
+    //~ Section* addArray(string firstLine, Bracket br, string[] arr)
+    //~ {
+        //~ import std.algorithm.sorting: sort;
+
+        //~ auto sec = addSection(firstLine, br);
+
+        //~ foreach(e; arr.sort)
+            //~ sec.payload ~= (e ~ ',').PayloadPiece;
+
+        //~ return sec;
+    //~ }
+
+    //~ Lines toLines() const
+    //~ {
+        //~ Lines ret;
+
+        //~ return toLines(ret, 0);
+    //~ }
+
+    //~ Lines toLines(ref Lines ret, in size_t offsetCnt) const
+    //~ {
+        //~ foreach(piece; payload)
+        //~ {
+            //~ if(piece._is!string)
+            //~ {
+                //~ ret.addOffset(offsetCnt);
+                //~ ret ~= piece.get!string;
+                //~ ret ~= '\n';
+            //~ }
+            //~ else
+            //~ {
+                //~ const s = piece.get!(Section*);
+
+                //~ s.toLines(ret, offsetCnt + 1);
+            //~ }
+        //~ }
+
+        //~ return ret;
+    //~ }
+//~ }
 
 import std.exception: enforce;
 import std.format: format;
@@ -123,10 +169,11 @@ private static void addOffset(ref Lines lines, size_t offsetCnt)
 class MesonBuildFile
 {
     const NativePath path;
-    Section rootSection;
+    Section_ rootSection;
 
     private this(NativePath filePath)
     {
+        rootSection = new Section_();
         path = filePath;
     }
 
@@ -140,7 +187,7 @@ class MesonBuildFile
         return ret;
     }
 
-    private Section*[string] namedArrays;
+    private Section_[string] namedArrays;
 
     enum CollectType
     {
@@ -212,7 +259,7 @@ class RootMesonBuildFile : MesonBuildFile
         allMesonBuildFiles[filePath] = this;
     }
 
-    private Section*[string] subprojects;
+    private Section_[string] subprojects;
 
     private void addSubproject(string name, string[] default_options, string version_)
     {
