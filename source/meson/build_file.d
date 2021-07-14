@@ -45,7 +45,7 @@ struct Section
         return sec;
     }
 
-    Section* addArray(string firstLine, Bracket br, string[] arr)
+    Section* addArray(string firstLine, Bracket br, in string[] arr)
     {
         auto sec = addSection(firstLine, br);
 
@@ -136,6 +136,25 @@ class MesonBuildFile
         children ~= ret;
 
         return ret;
+    }
+
+    private Section*[string] namedArrays;
+
+    void addFilesToFilesArrays(string arrName, string[] elems)
+    {
+        import std.algorithm.iteration: map;
+        import std.algorithm.sorting: sort;
+        import std.array: array;
+
+        auto arrSection = namedArrays.require(
+            arrName,
+            rootSection.addArray(arrName~` = files`, Bracket.ROUND, [])
+        );
+
+        auto arr = elems.map!(a => a.quote~`,`).array.sort;
+
+        foreach(e; arr)
+            (*arrSection).addLine(e);
     }
 }
 

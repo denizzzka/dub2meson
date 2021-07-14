@@ -109,9 +109,12 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 	{
 		import dub_stuff.collect: collectFiles;
 
-		auto srcs = collectFiles(pkg.path, pkg.recipe.buildSettings.sourcePaths, "*.d");
+		auto collected = collectFiles(pkg.path, pkg.recipe.buildSettings.sourcePaths, "*.d");
 
-		writeln("Collected sources: ", srcs);
+		//~ writeln("Collected sources: ", srcs);
+
+		foreach(suffix, paths; collected)
+			meson_build.addFilesToFilesArrays(suffix~"_src", paths);
 	}
 
 	// Loop over configurations
