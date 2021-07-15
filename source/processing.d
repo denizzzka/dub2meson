@@ -246,21 +246,29 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
 
     if(depsList.length != 0)
     {
-        auto deps = dep.addArray(
+        dep.addArray(
             `dependencies`.keyword,
             Bracket.SQUARE,
             depsList.map!(a => a~`_dep`).array
         );
     }
 
-    //~ foreach(arrName, arrVals; meson_build.rootSection.groups)
-    //~ {
-        //~ dep.addArray(
-            //~ arrName.keyword,
-            //~ Bracket.SQUARE,
-            //~ arrVals
-        //~ );
-    //~ }
+    foreach(grp, vals; meson_build.rootSection.groups)
+    {
+        with(Group)
+        if(
+            grp == sources ||
+            grp == include_directories ||
+            grp == string_imports
+        )
+        {
+            dep.addArray(
+                grp.keyword,
+                Bracket.SQUARE,
+                vals,
+            );
+        }
+    }
 }
 
 void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)

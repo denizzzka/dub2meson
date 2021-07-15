@@ -91,6 +91,9 @@ class Section : PayloadPiece
         if(group !is null)
             groups.require(group, sec);
 
+        import std.stdio;
+        writeln(">>>>>> Section ", sec, " added, grp==", group);
+
         return sec;
     }
 
@@ -170,24 +173,22 @@ class MesonFunction : Statement
     }
 }
 
-SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr, string groupId = null)
+Statement addArray(Section sec, string firstLine, Bracket br, PayloadPiece lines, string groupId = null)
 {
-    import std.algorithm.sorting: sort;
-
     auto stmnt = new Statement(groupId, firstLine, br);
-    auto lines = new SortedLines(arr);
-    stmnt.add = lines;
     sec.add = stmnt;
 
-    return lines;
+    stmnt.add = lines;
+
+    return stmnt;
 }
 
-void addArray(Section sec, string firstLine, Bracket br, Section lines)
+SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr, string groupId = null)
 {
-    auto stmnt = new Statement(null, firstLine, br);
-    sec.add = stmnt;
+    auto lines = new SortedLines(arr);
+    sec.addArray(firstLine, br, lines, groupId);
 
-    stmnt.add = lines;
+    return lines;
 }
 
 import std.exception: enforce;
