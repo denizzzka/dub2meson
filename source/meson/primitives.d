@@ -3,12 +3,12 @@ module meson.primitives;
 import dub.internal.vibecompat.inet.path: NativePath;
 import std.array: Appender;
 
-abstract class PayloadPiece_
+abstract class PayloadPiece
 {
     ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const;
 }
 
-class UnsortedLines : PayloadPiece_
+class UnsortedLines : PayloadPiece
 {
     protected string[] lines;
 
@@ -62,11 +62,11 @@ class SortedLines : UnsortedLines
     }
 }
 
-class Section_ : PayloadPiece_
+class Section_ : PayloadPiece
 {
-    private PayloadPiece_[] payload;
+    private PayloadPiece[] payload;
 
-    PayloadPiece_ add(PayloadPiece_ pp)
+    PayloadPiece add(PayloadPiece pp)
     {
         payload ~= pp;
 
