@@ -62,7 +62,22 @@ class SortedLines : UnsortedLines
     }
 }
 
-alias Group_ = string;
+enum Group : string
+{
+    sources = `sources`,
+    include_directories = `include_directories`,
+    string_imports = `__string_imports__`,
+    dependencies = `dependencies`,
+    subprojects = `__subprojects__`,
+}
+
+struct SectionID
+{
+    Group group;
+    string name;
+}
+
+alias SectionsByID = Section[][string];
 
 class Section : PayloadPiece
 {
@@ -75,9 +90,14 @@ class Section : PayloadPiece
         return pp;
     }
 
-    /*private*/ Section[string] groups;
+    /*private*/ SectionsByID[Group] groups;
 
-    package ref Section add(Group_ group, ref return Section sec)
+    package ref Section addToGroup(Group group, string name, ref return Section sec)
+    {
+        groups[name][group] = sec;
+    }
+
+    package ref Section add(Group group, string name, ref return Section sec)
     {
         add(sec);
 

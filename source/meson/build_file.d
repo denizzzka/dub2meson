@@ -73,15 +73,6 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
     }
 }
 
-enum Group : string
-{
-    sources = `sources`,
-    include_directories = `include_directories`,
-    string_imports = `__string_imports__`,
-    dependencies = `dependencies`,
-    subprojects = `__subprojects__`,
-}
-
 class RootMesonBuildFile : MesonBuildFile
 {
     this(NativePath filePath)
