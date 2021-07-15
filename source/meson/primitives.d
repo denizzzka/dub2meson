@@ -73,9 +73,9 @@ class Section : PayloadPiece
         return pp;
     }
 
-    Func addFunc(string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    MesonFunction addFunc(string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
-        auto ret = new Func(firstLine, unnamed, keyVal);
+        auto ret = new MesonFunction(firstLine, unnamed, keyVal);
 
         add(ret);
 
@@ -127,7 +127,7 @@ class Statement : OffsetSection
     }
 }
 
-class Func : Statement
+class MesonFunction : Statement
 {
     private this(string firstLine, string[] unnamed, string[string] keyVal)
     {
