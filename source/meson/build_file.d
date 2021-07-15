@@ -26,39 +26,30 @@ class MesonBuildFile
 
     /*private*/ SortedLines[string] namedArrays;
 
-    enum CollectType
+    void addFilesToFilesArrays(Group grp, string arrName, string[] elems)
     {
-        Files,
-        IncludeDirs,
-        StringArray,
-    }
-
-    void addFilesToFilesArrays(CollectType ct, string arrName, string[] elems)
-    {
-        Group grp;
         string arrDirective;
 
         with(Group)
-        with(CollectType)
-        final switch(ct)
+        switch(grp)
         {
-            case Files:
-                grp = sources;
+            case sources:
                 arrDirective = ` = files`;
                 break;
 
-            case IncludeDirs:
-                grp = include_directories;
+            case include_directories:
                 arrDirective = ` = include_directories`;
                 break;
 
-            case StringArray:
-                grp = string_imports;
+            case string_imports:
                 arrDirective = ` = `;
                 break;
+
+            default:
+                assert(false, "Unsupported group: "~grp);
         }
 
-        const brckType = (ct != CollectType.StringArray) ? Bracket.ROUND : Bracket.SQUARE;
+        const brckType = (grp != Group.string_imports) ? Bracket.ROUND : Bracket.SQUARE;
 
         auto arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], grp);
 
