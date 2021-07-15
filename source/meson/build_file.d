@@ -137,15 +137,17 @@ class RootMesonBuildFile : MesonBuildFile
 
     private bool[string] dependencies; //TODO: join into namedArrays
 
-    void addDependency(string name)
+    void addExternalDependency(string name)
     {
         import std.format: format;
 
-        if(name in dependencies)
+        if(isGroupAvailable(name))
             return;
 
         addSubproject(name, null, null);
+
         rootSection.add = new UnsortedLines([`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name)]);
+
         dependencies[name] = true;
     }
 

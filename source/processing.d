@@ -237,7 +237,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
     const depsList = pkg.getDependencies(confName).byKey.array;
 
     foreach(ref e; depsList)
-        meson_build.addDependency(e);
+        meson_build.addExternalDependency(e);
 
     auto dep = meson_build.addFunc(
         Group.dependencies,
