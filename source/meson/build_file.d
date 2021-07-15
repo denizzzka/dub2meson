@@ -35,10 +35,6 @@ class MesonBuildFile
 
     void addFilesToFilesArrays(CollectType ct, string arrName, string[] elems)
     {
-        import std.algorithm.iteration: map;
-        import std.algorithm.sorting: sort;
-        import std.array: array;
-
         Group grp;
         string arrDirective;
 
@@ -66,9 +62,7 @@ class MesonBuildFile
 
         auto arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], grp);
 
-        auto arr = elems.map!(a => a.quote).array.sort.array;
-
-        arrSection.addLines(arr);
+        arrSection.addLines(elems);
     }
 }
 
