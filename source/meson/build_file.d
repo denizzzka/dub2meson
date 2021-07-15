@@ -82,6 +82,15 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
     }
 }
 
+enum Group : string
+{
+    sources = `sources`,
+    include_directories = `include_directories`,
+    string_imports = `__string_imports__`,
+    dependencies = `dependencies`,
+    subprojects = `__subprojects__`,
+}
+
 class RootMesonBuildFile : MesonBuildFile
 {
     this(NativePath filePath)
@@ -92,6 +101,16 @@ class RootMesonBuildFile : MesonBuildFile
     }
 
     private Section[string] subprojects;
+
+    ref Section add(string group, ref return Section sec)
+    {
+        return rootSection.add(group, sec);
+    }
+
+    MesonFunction addFunc(string group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    {
+        return rootSection.addFunc(group, firstLine, unnamed, keyVal);
+    }
 
     private void addSubproject(string name, string[] default_options, string version_)
     {

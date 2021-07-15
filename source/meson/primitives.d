@@ -62,14 +62,7 @@ class SortedLines : UnsortedLines
     }
 }
 
-enum Group : string
-{
-    sources = `sources`,
-    include_directories = `include_directories`,
-    string_imports = `__string_imports__`,
-    dependencies = `dependencies`,
-    subprojects = `__subprojects__`,
-}
+alias Group_ = string;
 
 class Section : PayloadPiece
 {
@@ -84,7 +77,7 @@ class Section : PayloadPiece
 
     /*private*/ Section[string] groups;
 
-    ref Section add(Group group, ref return Section sec)
+    package ref Section add(Group_ group, ref return Section sec)
     {
         add(sec);
 
@@ -97,7 +90,7 @@ class Section : PayloadPiece
         return sec;
     }
 
-    MesonFunction addFunc(Group group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    package MesonFunction addFunc(Group_ group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
         auto ret = new MesonFunction(group, firstLine, unnamed, keyVal);
 
