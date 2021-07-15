@@ -62,7 +62,7 @@ class SortedLines : UnsortedLines
     }
 }
 
-class Section_ : PayloadPiece
+class Section : PayloadPiece
 {
     private PayloadPiece[] payload;
 
@@ -91,7 +91,7 @@ class Section_ : PayloadPiece
     }
 }
 
-class OffsetSection : Section_
+class OffsetSection : Section
 {
     override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
     {
@@ -144,7 +144,7 @@ class Func : Statement
     }
 }
 
-SortedLines addArray(Section_ sec, string firstLine, Bracket br, string[] arr)
+SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr)
 {
     import std.algorithm.sorting: sort;
 
@@ -156,7 +156,7 @@ SortedLines addArray(Section_ sec, string firstLine, Bracket br, string[] arr)
     return lines;
 }
 
-void addArray(Section_ sec, string firstLine, Bracket br, UnsortedLines lines)
+void addArray(Section sec, string firstLine, Bracket br, UnsortedLines lines)
 {
     auto stmnt = new Statement(firstLine, br);
     sec.add = stmnt;

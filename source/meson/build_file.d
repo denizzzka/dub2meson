@@ -6,11 +6,11 @@ import meson.primitives;
 class MesonBuildFile
 {
     const NativePath path;
-    Section_ rootSection;
+    Section rootSection;
 
     private this(NativePath filePath)
     {
-        rootSection = new Section_();
+        rootSection = new Section();
         path = filePath;
     }
 
@@ -95,7 +95,7 @@ class RootMesonBuildFile : MesonBuildFile
         allMesonBuildFiles[filePath] = this;
     }
 
-    private Section_[string] subprojects;
+    private Section[string] subprojects;
 
     private void addSubproject(string name, string[] default_options, string version_)
     {
