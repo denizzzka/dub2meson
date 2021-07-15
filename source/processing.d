@@ -202,10 +202,10 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 
             // processExecOrLib can process both executable() and library():
             if(bo.buildExecutable)
-                processExecOrLib(meson_build, conf, pkg, bo);
+                processExecOrLib(meson_build, conf.name, pkg, bo);
 
             if(bo.buildLibrary)
-                processExecOrLib(meson_build, conf, pkg, bo);
+                processExecOrLib(meson_build, conf.name, pkg, bo);
 
             conf.buildSettings.targetType.writeln;
         }
@@ -226,9 +226,7 @@ struct BuildOptions
     bool forceStaticLib;
 }
 
-import dub.recipe.packagerecipe: ConfigurationInfo;
-
-void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf, in Package pkg, in BuildOptions bo)
+void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     string name;
     string suffix;
@@ -249,14 +247,14 @@ void processExecOrLib(RootMesonBuildFile meson_build, in ConfigurationInfo conf,
     import std.algorithm.iteration: map;
     import std.array: array;
 
-    const depsList = pkg.getDependencies(conf.name).byKey.array;
+    const depsList = pkg.getDependencies(confName).byKey.array;
 
     foreach(ref e; depsList)
         meson_build.addDependency(e);
 
     auto exeOrLib = meson_build.rootSection.addFunc(
-        conf.name~suffix~` = `~name,
-        [conf.name.quote],
+        confName~suffix~` = `~name,
+        [confName.quote],
     );
 
     if(depsList.length != 0)
