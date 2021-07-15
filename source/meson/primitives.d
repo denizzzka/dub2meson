@@ -62,6 +62,14 @@ class SortedLines : UnsortedLines
     }
 }
 
+enum Group : string
+{
+    sources = `sources`,
+    include_directories = `include_directories`,
+    dependencies = `dependencies`,
+    subprojects = `__subprojects__`,
+}
+
 class Section : PayloadPiece
 {
     private PayloadPiece[] payload;
@@ -73,11 +81,16 @@ class Section : PayloadPiece
         return pp;
     }
 
-    MesonFunction addFunc(string id, string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    private MesonFunction[string] groups;
+
+    MesonFunction addFunc(Group group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
-        auto ret = new MesonFunction(id, firstLine, unnamed, keyVal);
+        auto ret = new MesonFunction(group, firstLine, unnamed, keyVal);
 
         add(ret);
+
+        if(group !is null)
+            groups.require(group, ret);
 
         return ret;
     }
@@ -129,11 +142,11 @@ class Statement : OffsetSection
 
 class MesonFunction : Statement
 {
-    const string uniqId;
+    const string groupId;
 
-    private this(string _uniqId, string firstLine, string[] unnamed, string[string] keyVal)
+    private this(string _groupId, string firstLine, string[] unnamed, string[string] keyVal)
     {
-        uniqId = _uniqId;
+        groupId = _groupId;
 
         super(firstLine, Bracket.ROUND);
 
