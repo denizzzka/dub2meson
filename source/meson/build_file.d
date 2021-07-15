@@ -102,8 +102,10 @@ class RootMesonBuildFile : MesonBuildFile
         if(name in subprojects)
             return;
 
+        const funcId = name~`_sub`;
         auto s = rootSection.addFunc(
-            name~`_sub = subproject`,
+            funcId,
+            funcId~` = subproject`,
             [name.quote],
             version_ ? [`version`: version_] : null,
         );

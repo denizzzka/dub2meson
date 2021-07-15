@@ -73,9 +73,9 @@ class Section : PayloadPiece
         return pp;
     }
 
-    MesonFunction addFunc(string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    MesonFunction addFunc(string id, string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
-        auto ret = new MesonFunction(firstLine, unnamed, keyVal);
+        auto ret = new MesonFunction(id, firstLine, unnamed, keyVal);
 
         add(ret);
 
@@ -129,8 +129,12 @@ class Statement : OffsetSection
 
 class MesonFunction : Statement
 {
-    private this(string firstLine, string[] unnamed, string[string] keyVal)
+    const string uniqId;
+
+    private this(string _uniqId, string firstLine, string[] unnamed, string[string] keyVal)
     {
+        uniqId = _uniqId;
+
         super(firstLine, Bracket.ROUND);
 
         auto lines = new UnsortedLines(unnamed);

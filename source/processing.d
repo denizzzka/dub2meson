@@ -91,6 +91,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
     // Adding project()
     {
         auto project = meson_build.rootSection.addFunc(
+            null,
             `project`,
             [
                 pkg.basePackage.name.quote,
@@ -238,8 +239,10 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
     foreach(ref e; depsList)
         meson_build.addDependency(e);
 
+    const depId = confName~`_dep`;
     auto dep = meson_build.rootSection.addFunc(
-        confName~`_dep = declare_dependency`,
+        depId,
+        depId~` = declare_dependency`,
     );
 
     if(depsList.length != 0)
@@ -279,8 +282,10 @@ void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Pac
     else
         assert(false);
 
+    const uniqId = confName~suffix;
     auto exeOrLib = meson_build.rootSection.addFunc(
-        confName~suffix~` = `~name,
+        uniqId,
+        uniqId~` = `~name,
         [confName.quote],
     );
 
