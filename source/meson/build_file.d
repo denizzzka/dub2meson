@@ -100,8 +100,6 @@ class RootMesonBuildFile : MesonBuildFile
         allMesonBuildFiles[filePath] = this;
     }
 
-    private Section[string] subprojects;
-
     ref Section add(string group, ref return Section sec)
     {
         return rootSection.add(group, sec);
@@ -112,9 +110,14 @@ class RootMesonBuildFile : MesonBuildFile
         return rootSection.addFunc(group, firstLine, unnamed, keyVal);
     }
 
+    bool isGroupAvailable(string name) const
+    {
+        return (name in rootSection.groups) !is null;
+    }
+
     private void addSubproject(string name, string[] default_options, string version_)
     {
-        if(name in subprojects)
+        if(isGroupAvailable(name))
             return;
 
         auto s = rootSection.addFunc(
@@ -130,8 +133,6 @@ class RootMesonBuildFile : MesonBuildFile
                 Bracket.SQUARE,
                 default_options
             );
-
-        subprojects[name] = s;
     }
 
     private bool[string] dependencies; //TODO: join into namedArrays
