@@ -200,6 +200,8 @@ void createMesonFile(in Package pkg, in Cfg cfg)
                     return;
             }
 
+            processDependency(meson_build, conf.name, pkg, bo);
+
             // processExecOrLib can process both executable() and library():
             if(bo.buildExecutable)
                 processExecOrLib(meson_build, conf.name, pkg, bo);
@@ -226,6 +228,39 @@ struct BuildOptions
     bool forceStaticLib;
 }
 
+void processDependency(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
+{
+    import std.algorithm.iteration: map;
+    import std.array: array;
+
+    const depsList = pkg.getDependencies(confName).byKey.array;
+
+    foreach(ref e; depsList)
+        meson_build.addDependency(e);
+
+    auto dep = meson_build.rootSection.addFunc(
+        confName~`_dep = declare_dependency`,
+    );
+
+    if(depsList.length != 0)
+    {
+        auto deps = dep.addArray(
+            `dependencies`.keyword,
+            Bracket.SQUARE,
+            depsList.map!(a => a~`_dep`).array
+        );
+    }
+
+    foreach(arrName, arrVals; meson_build.namedArrays)
+    {
+        dep.addArray(
+            arrName.keyword,
+            Bracket.SQUARE,
+            arrVals
+        );
+    }
+}
+
 void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     string name;
@@ -244,25 +279,14 @@ void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Pac
     else
         assert(false);
 
-    import std.algorithm.iteration: map;
-    import std.array: array;
-
-    const depsList = pkg.getDependencies(confName).byKey.array;
-
-    foreach(ref e; depsList)
-        meson_build.addDependency(e);
-
     auto exeOrLib = meson_build.rootSection.addFunc(
         confName~suffix~` = `~name,
         [confName.quote],
     );
 
-    if(depsList.length != 0)
-    {
-        auto deps = exeOrLib.addArray(
-            `dependencies`.keyword,
-            Bracket.SQUARE,
-            depsList.map!(a => a~`_dep`).array
-        );
-    }
+    auto deps = exeOrLib.addArray(
+        `dependencies`.keyword,
+        Bracket.SQUARE,
+        [confName.quote]
+    );
 }

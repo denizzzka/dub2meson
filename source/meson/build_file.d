@@ -24,7 +24,7 @@ class MesonBuildFile
         return ret;
     }
 
-    private SortedLines[string] namedArrays;
+    /*private*/ SortedLines[string] namedArrays;
 
     enum CollectType
     {
@@ -118,7 +118,7 @@ class RootMesonBuildFile : MesonBuildFile
         subprojects[name] = s;
     }
 
-    private bool[string] dependencies;
+    private bool[string] dependencies; //TODO: join into namedArrays
 
     void addDependency(string name)
     {

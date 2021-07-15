@@ -156,6 +156,14 @@ SortedLines addArray(Section_ sec, string firstLine, Bracket br, string[] arr)
     return lines;
 }
 
+void addArray(Section_ sec, string firstLine, Bracket br, UnsortedLines lines)
+{
+    auto stmnt = new Statement(firstLine, br);
+    sec.add = stmnt;
+
+    stmnt.add = lines;
+}
+
 import std.exception: enforce;
 import std.format: format;
 import std.algorithm.searching: canFind;
