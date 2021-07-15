@@ -253,14 +253,14 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
         );
     }
 
-    foreach(arrName, arrVals; meson_build.namedArrays)
-    {
-        dep.addArray(
-            arrName.keyword,
-            Bracket.SQUARE,
-            arrVals
-        );
-    }
+    //~ foreach(arrName, arrVals; meson_build.rootSection.groups)
+    //~ {
+        //~ dep.addArray(
+            //~ arrName.keyword,
+            //~ Bracket.SQUARE,
+            //~ arrVals
+        //~ );
+    //~ }
 }
 
 void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)

@@ -66,13 +66,14 @@ enum Group : string
 {
     sources = `sources`,
     include_directories = `include_directories`,
+    string_imports = `__string_imports__`,
     dependencies = `dependencies`,
     subprojects = `__subprojects__`,
 }
 
 class Section : PayloadPiece
 {
-    private PayloadPiece[] payload;
+    /*private*/ PayloadPiece[] payload;
 
     PayloadPiece add(PayloadPiece pp)
     {
@@ -81,7 +82,17 @@ class Section : PayloadPiece
         return pp;
     }
 
-    private MesonFunction[string] groups;
+    /*private*/ Section[string] groups;
+
+    ref Section add(Group group, ref return Section sec)
+    {
+        add(sec);
+
+        if(group !is null)
+            groups.require(group, sec);
+
+        return sec;
+    }
 
     MesonFunction addFunc(Group group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
@@ -114,11 +125,13 @@ class OffsetSection : Section
 
 class Statement : OffsetSection
 {
+    const string groupId;
     string firstLine;
     Bracket bracket;
 
-    private this(string _firstLine, Bracket br)
+    private this(string _groupId, string _firstLine, Bracket br)
     {
+        groupId = _groupId;
         firstLine= _firstLine;
         bracket = br;
     }
@@ -142,13 +155,9 @@ class Statement : OffsetSection
 
 class MesonFunction : Statement
 {
-    const string groupId;
-
-    private this(string _groupId, string firstLine, string[] unnamed, string[string] keyVal)
+    private this(string groupId, string firstLine, string[] unnamed, string[string] keyVal)
     {
-        groupId = _groupId;
-
-        super(firstLine, Bracket.ROUND);
+        super(groupId, firstLine, Bracket.ROUND);
 
         auto lines = new UnsortedLines(unnamed);
         super.add(lines);
@@ -161,11 +170,11 @@ class MesonFunction : Statement
     }
 }
 
-SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr)
+SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr, string groupId = null)
 {
     import std.algorithm.sorting: sort;
 
-    auto stmnt = new Statement(firstLine, br);
+    auto stmnt = new Statement(groupId, firstLine, br);
     auto lines = new SortedLines(arr);
     stmnt.add = lines;
     sec.add = stmnt;
@@ -173,9 +182,9 @@ SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr)
     return lines;
 }
 
-void addArray(Section sec, string firstLine, Bracket br, UnsortedLines lines)
+void addArray(Section sec, string firstLine, Bracket br, Section lines)
 {
-    auto stmnt = new Statement(firstLine, br);
+    auto stmnt = new Statement(null, firstLine, br);
     sec.add = stmnt;
 
     stmnt.add = lines;

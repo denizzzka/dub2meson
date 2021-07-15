@@ -39,30 +39,32 @@ class MesonBuildFile
         import std.algorithm.sorting: sort;
         import std.array: array;
 
+        Group grp;
         string arrDirective;
 
+        with(Group)
         with(CollectType)
         final switch(ct)
         {
             case Files:
+                grp = sources;
                 arrDirective = ` = files`;
                 break;
 
             case IncludeDirs:
+                grp = include_directories;
                 arrDirective = ` = include_directories`;
                 break;
 
             case StringArray:
+                grp = string_imports;
                 arrDirective = ` = `;
                 break;
         }
 
         const brckType = (ct != CollectType.StringArray) ? Bracket.ROUND : Bracket.SQUARE;
 
-        auto arrSection = namedArrays.require(
-            arrName,
-            rootSection.addArray(arrName ~ arrDirective, brckType, [])
-        );
+        auto arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], grp);
 
         auto arr = elems.map!(a => a.quote).array.sort.array;
 
