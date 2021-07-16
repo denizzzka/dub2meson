@@ -142,7 +142,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
             import std.algorithm.iteration: uniq;
             import std.array: array;
 
-            paths = paths.sort.uniq.array;
+            paths = paths.sort.uniq.map!(a => a.quote).array;
 
             meson_build.addFilesToFilesArrays(grp, suffix~underscore~typeName, paths);
         }
@@ -223,6 +223,8 @@ void createMesonFile(in Package pkg, in Cfg cfg)
     //~ pkg.recipe.buildSettings.writeln;
 }
 
+import std.algorithm.iteration: map;
+
 struct BuildOptions
 {
     bool buildSomeBinary = true;
@@ -234,7 +236,6 @@ struct BuildOptions
 
 void processDependency(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
-    import std.algorithm.iteration: map;
     import std.array: array;
 
     const depsList = pkg.getDependencies(confName).byKey.array;
