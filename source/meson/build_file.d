@@ -24,6 +24,7 @@ class MesonBuildFile
         return ret;
     }
 
+    //FIXME: remove:
     /*private*/ SortedLines[string] namedArrays;
 
     void addFilesToFilesArrays(Group grp, string arrName, string[] elems)
@@ -51,9 +52,11 @@ class MesonBuildFile
 
         const brckType = (grp != Group.string_imports) ? Bracket.ROUND : Bracket.SQUARE;
 
-        auto arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], grp);
+        SortedLines lines;
+        Section arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], lines);
+        rootSection.addToGroup(grp, arrName, arrSection);
 
-        arrSection.addLines(elems);
+        lines.addLines(elems);
     }
 }
 
@@ -82,14 +85,21 @@ class RootMesonBuildFile : MesonBuildFile
         allMesonBuildFiles[filePath] = this;
     }
 
-    ref Section add(string group, ref return Section sec)
+    ref Section add(Group group, string name, ref return Section sec)
     {
-        return rootSection.add(group, sec);
+        rootSection.add(sec);
+        rootSection.addToGroup(group, name, sec);
+
+        return sec;
     }
 
-    MesonFunction addFunc(string group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    MesonFunction addFunc(Group group, string name, string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
-        return rootSection.addFunc(group, firstLine, unnamed, keyVal);
+        auto ret = rootSection.addFunc(firstLine, unnamed, keyVal);
+
+        rootSection.addToGroup(group, name, ret);
+
+        return ret;
     }
 
     bool isGroupAvailable(string name) const
@@ -102,8 +112,9 @@ class RootMesonBuildFile : MesonBuildFile
         if(isGroupAvailable(name))
             return;
 
-        auto s = rootSection.addFunc(
+        auto s = addFunc(
             Group.subprojects,
+            name,
             name~`_sub = subproject`,
             [name.quote],
             version_ ? [`version`: version_] : null,

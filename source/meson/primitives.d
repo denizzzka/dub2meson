@@ -77,7 +77,7 @@ struct SectionID
     string name;
 }
 
-alias SectionsByID = Section[][string];
+alias SectionsByID = Section[string];
 
 class Section : PayloadPiece
 {
@@ -92,7 +92,7 @@ class Section : PayloadPiece
 
     /*private*/ SectionsByID[Group] groups;
 
-    package ref Section addToGroup(Group group, string name, ref return Section sec)
+    package void addToGroup(Group group, string name, Section sec)
     {
         groups[name][group] = sec;
     }
@@ -101,23 +101,14 @@ class Section : PayloadPiece
     {
         add(sec);
 
-        if(group !is null)
-            groups.require(group, sec);
-
-        import std.stdio;
-        writeln(">>>>>> Section ", sec, " added, grp==", group);
-
         return sec;
     }
 
-    package MesonFunction addFunc(Group_ group, string firstLine, string[] unnamed = null, string[string] keyVal = null)
+    package MesonFunction addFunc(string firstLine, string[] unnamed = null, string[string] keyVal = null)
     {
-        auto ret = new MesonFunction(group, firstLine, unnamed, keyVal);
+        auto ret = new MesonFunction(firstLine, unnamed, keyVal);
 
         add(ret);
-
-        if(group !is null)
-            groups.require(group, ret);
 
         return ret;
     }
@@ -141,13 +132,11 @@ class OffsetSection : Section
 
 class Statement : OffsetSection
 {
-    const string groupId;
     string firstLine;
     Bracket bracket;
 
-    private this(string _groupId, string _firstLine, Bracket br)
+    private this(string _firstLine, Bracket br)
     {
-        groupId = _groupId;
         firstLine= _firstLine;
         bracket = br;
     }
@@ -171,9 +160,9 @@ class Statement : OffsetSection
 
 class MesonFunction : Statement
 {
-    private this(string groupId, string firstLine, string[] unnamed, string[string] keyVal)
+    private this(string firstLine, string[] unnamed, string[string] keyVal)
     {
-        super(groupId, firstLine, Bracket.ROUND);
+        super(firstLine, Bracket.ROUND);
 
         auto lines = new UnsortedLines(unnamed);
         super.add(lines);
@@ -186,20 +175,28 @@ class MesonFunction : Statement
     }
 }
 
-Statement addArray(Section sec, string firstLine, Bracket br, PayloadPiece lines, string groupId = null)
+//TODO: simplify addArray stuff
+Statement addArray(Section sec, string firstLine, Bracket br, ref SortedLines lines)
 {
-    auto stmnt = new Statement(groupId, firstLine, br);
-    sec.add = stmnt;
-
+    auto stmnt = new Statement(firstLine, br);
     stmnt.add = lines;
+    sec.add = stmnt;
 
     return stmnt;
 }
 
-SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr, string groupId = null)
+Statement addArray(Section sec, string firstLine, Bracket br, string[] arr, out SortedLines lines)
 {
-    auto lines = new SortedLines(arr);
-    sec.addArray(firstLine, br, lines, groupId);
+    lines = new SortedLines(arr);
+
+    return sec.addArray(firstLine, br, lines);
+}
+
+SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr)
+{
+    SortedLines lines;
+
+    sec.addArray(firstLine, br, arr, lines);
 
     return lines;
 }

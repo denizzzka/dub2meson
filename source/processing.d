@@ -92,6 +92,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
     {
         auto project = meson_build.addFunc(
             null,
+            null,
             `project`,
             [
                 pkg.basePackage.name.quote,
@@ -243,6 +244,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
 
     auto dep = meson_build.addFunc(
         Group.dependencies,
+        confName,
         confName~`_dep = declare_dependency`,
     );
 
@@ -264,11 +266,11 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
             grp == string_imports
         )
         {
-            dep.addArray(
-                grp.keyword,
-                Bracket.SQUARE,
-                vals,
-            );
+            SortedLines lines;
+            Statement arr = dep.addArray(grp.keyword, Bracket.SQUARE, [], lines);
+
+            foreach(name; vals.byKey)
+                lines.addLine(name);
         }
     }
 }
@@ -293,6 +295,7 @@ void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Pac
 
     auto exeOrLib = meson_build.addFunc(
         null,
+        confName,
         confName~suffix~` = `~name,
         [confName.quote],
     );
