@@ -24,9 +24,6 @@ class MesonBuildFile
         return ret;
     }
 
-    //FIXME: remove:
-    /*private*/ SortedLines[string] namedArrays;
-
     void addFilesToFilesArrays(Group grp, string arrName, string[] elems)
     {
         string arrDirective;
