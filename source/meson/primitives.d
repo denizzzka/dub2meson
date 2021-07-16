@@ -71,12 +71,7 @@ enum Group : string
     subprojects = `__subprojects__`,
 }
 
-struct SectionID
-{
-    Group group;
-    string name;
-}
-
+// Key ID here is name of DUB config or external dependency name
 alias SectionsByID = Section[string];
 
 class Section : PayloadPiece
