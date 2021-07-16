@@ -268,7 +268,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
         )
         {
             SortedLines lines;
-            Statement arr = dep.addArray(grp.keyword, Bracket.SQUARE, [], lines);
+            Statement arr = dep.addArray(grp.keyword, Bracket.SQUARE, [], lines, true);
 
             foreach(name; vals.byKey)
                 lines.addLine(name);

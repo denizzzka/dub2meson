@@ -50,7 +50,7 @@ class MesonBuildFile
         const brckType = (grp != Group.string_imports) ? Bracket.ROUND : Bracket.SQUARE;
 
         SortedLines lines;
-        Section arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], lines);
+        Section arrSection = rootSection.addArray(arrName ~ arrDirective, brckType, [], lines, false);
         rootSection.addToGroup(grp, arrName, arrSection);
 
         lines.addLines(elems);

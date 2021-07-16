@@ -134,11 +134,13 @@ class Statement : OffsetSection
 {
     string firstLine;
     Bracket bracket;
+    const bool trailingComma;
 
-    private this(string _firstLine, Bracket br)
+    private this(string _firstLine, Bracket br, bool _trailingComma)
     {
         firstLine= _firstLine;
         bracket = br;
+        trailingComma = _trailingComma;
     }
 
     override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
@@ -152,7 +154,7 @@ class Statement : OffsetSection
         super.toLines(ret, offsetCnt);
 
         ret.addOffset(offsetCnt);
-        ret ~= latestBr ~ "\n";
+        ret ~= latestBr ~ (trailingComma ? "," : "") ~ "\n";
 
         return ret;
     }
@@ -162,7 +164,7 @@ class MesonFunction : Statement
 {
     private this(string firstLine, string[] unnamed, string[string] keyVal)
     {
-        super(firstLine, Bracket.ROUND);
+        super(firstLine, Bracket.ROUND, false);
 
         auto lines = new UnsortedLines(unnamed);
         super.add(lines);
@@ -176,27 +178,27 @@ class MesonFunction : Statement
 }
 
 //TODO: simplify addArray stuff
-Statement addArray(Section sec, string firstLine, Bracket br, ref SortedLines lines)
+Statement addArray(Section sec, string firstLine, Bracket br, ref SortedLines lines, bool trailingComma = true)
 {
-    auto stmnt = new Statement(firstLine, br);
+    auto stmnt = new Statement(firstLine, br, trailingComma);
     stmnt.add = lines;
     sec.add = stmnt;
 
     return stmnt;
 }
 
-Statement addArray(Section sec, string firstLine, Bracket br, string[] arr, out SortedLines lines)
+Statement addArray(Section sec, string firstLine, Bracket br, string[] arr, out SortedLines lines, bool trailingComma = true)
 {
     lines = new SortedLines(arr);
 
-    return sec.addArray(firstLine, br, lines);
+    return sec.addArray(firstLine, br, lines, trailingComma);
 }
 
-SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr)
+SortedLines addArray(Section sec, string firstLine, Bracket br, string[] arr, bool trailingComma = true)
 {
     SortedLines lines;
 
-    sec.addArray(firstLine, br, arr, lines);
+    sec.addArray(firstLine, br, arr, lines, trailingComma);
 
     return lines;
 }
