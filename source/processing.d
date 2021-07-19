@@ -40,27 +40,31 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 {
     import std.file: mkdirRecurse;
 
-    byte[string] processedPackages;
+    bool isRootPackage = true;
+    RootMesonBuildFile[string] processedPackages;
 
     foreach(currPkg; dub.project.getTopologicalPackageList)
     {
-        const basePkgName = currPkg.basePackage.name;
+        auto meson_build = processedPackages.require(
+            currPkg.basePackage.name,
+            createMesonFile(currPkg, cfg, isRootPackage)
+        );
 
-        if(basePkgName !in processedPackages)
+        if(cfg.verbose)
         {
-            if(cfg.verbose)
-            {
-                import std.stdio;
+            import std.stdio;
 
-                writefln(`Processing '%s' (%s)`,
-                    basePkgName,
-                    currPkg.basePackage.recipe.version_,
-                );
-            }
-
-            createMesonFile(currPkg.basePackage, cfg);
-            processedPackages[basePkgName] = 1;
+            writefln(`Processing '%s' (%s)`,
+                currPkg.name,
+                currPkg.recipe.version_,
+            );
         }
+
+        if(meson_build !is null)
+            meson_build.processDubPackage(currPkg);
+
+        processedPackages[currPkg.basePackage.name] = meson_build;
+        isRootPackage = false; // only first package is root package
     }
 }
 
@@ -69,12 +73,11 @@ import meson.build_file;
 import meson.primitives;
 import std.stdio;
 
-void createMesonFile(in Package pkg, in Cfg cfg)
+RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPackage)
 {
     import dub.internal.vibecompat.core.file;
 
     immutable filename = `meson.build`;
-
     const NativePath mesonBuildFilePath = pkg.path ~ filename;
 
     if(mesonBuildFilePath.existsFile)
@@ -82,14 +85,25 @@ void createMesonFile(in Package pkg, in Cfg cfg)
         if(cfg.verbose)
             writeln("file ", mesonBuildFilePath, " exists, skipping");
 
-        return;
+        return null;
     }
 
-    const subprojects = NativePath(cfg.subprojectsPath);
+    if(isRootPackage)
+        return new RootMesonBuildFile(mesonBuildFilePath);
+    else
+    {
+        const subprojects = NativePath(cfg.subprojectsPath);
 
-    auto meson_build = new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
+        return new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
+    }
+}
+
+void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
+{
+    immutable bool isSubPackage = pkg.parentPackage !is null;
 
     // Adding project()
+    if(!isSubPackage)
     {
         auto project = meson_build.addFunc(
             null,
