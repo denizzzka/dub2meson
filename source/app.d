@@ -15,6 +15,13 @@ struct Cfg
 	PlacementLocation placementLocation = PlacementLocation.user;
 	bool overrideMesonBuildFiles;
 	bool verbose;
+
+	import dub.internal.vibecompat.inet.path: NativePath;
+
+	NativePath directSubprojectsDir() const
+	{
+		return NativePath(rootPath ~ subprojectsPath);
+	}
 }
 
 private Cfg _cfg;

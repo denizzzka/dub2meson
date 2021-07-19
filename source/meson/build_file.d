@@ -2,8 +2,9 @@ module meson.build_file;
 
 import dub.internal.vibecompat.inet.path: NativePath;
 import meson.primitives;
-import meson.mangling: mangle;
-import app: Cfg;
+import meson.mangling: mangle, substForbiddenSymbols;
+import app: Cfg; //FIXME: remove
+import app: cfg;
 
 class MesonBuildFile
 {
@@ -106,6 +107,8 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
     }
 }
 
+private bool[string] wrapFiles;
+
 class RootMesonBuildFile : MesonBuildFile
 {
     import dub.package_: Package;
@@ -165,11 +168,16 @@ class RootMesonBuildFile : MesonBuildFile
         if(getSectionOrNull(grp, name) !is null)
             return;
 
+        import meson.wrap: createWrapFile;
+
+        if(!(name in wrapFiles))
+            pkg.createWrapFile;
+
         auto s = addFunc(
             grp,
             name,
             name.mangle(grp)~` = subproject`,
-            [name.quote],
+            [name.substForbiddenSymbols.quote],
             version_ ? [`version`: version_] : null,
         );
 
@@ -181,15 +189,18 @@ class RootMesonBuildFile : MesonBuildFile
             );
     }
 
-    void addExternalDependency(string baseName)
+    //FIXME: need to know base dependency name
+    void addExternalDependency(string dependencyName)
     {
         import std.format: format;
-
-        const name = baseName;
+        import meson.wrap: createWrapFile;
 
         // If depends from this Meson project it isn't need to add "subproject" directive
-        if(baseName == dubBasePackageName)
+        if(dependencyName == dubBasePackageName)
             return;
+
+        //TODO: subprojects support
+        const name = dependencyName;
 
         // Already defined?
         if(getSectionOrNull(Group.external_dependencies, name) !is null)

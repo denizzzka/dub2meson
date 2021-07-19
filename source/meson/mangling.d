@@ -40,7 +40,7 @@ string mangle(string name, Group group) pure
     return name.substForbiddenSymbols ~ '_' ~ suffix;
 }
 
-private string substForbiddenSymbols(string s) pure
+string substForbiddenSymbols(string s) pure
 {
     import std.algorithm.iteration: substitute;
     import std.array: array;
