@@ -76,9 +76,13 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 
 class RootMesonBuildFile : MesonBuildFile
 {
-    this(NativePath filePath)
+    const string dubBasePackageName;
+
+    this(NativePath filePath, string basePackageName)
     {
         super(filePath);
+
+        dubBasePackageName = basePackageName;
 
         allMesonBuildFiles[filePath] = this;
     }
@@ -138,10 +142,17 @@ class RootMesonBuildFile : MesonBuildFile
             );
     }
 
-    void addExternalDependency(string name)
+    void addExternalDependency(string baseName)
     {
         import std.format: format;
 
+        const name = baseName;
+
+        // If depends from this Meson project it isn't need to add "subproject" directive
+        if(baseName == dubBasePackageName)
+            return;
+
+        // Already defined?
         if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
 

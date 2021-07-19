@@ -89,12 +89,12 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
     }
 
     if(isRootPackage)
-        return new RootMesonBuildFile(mesonBuildFilePath);
+        return new RootMesonBuildFile(mesonBuildFilePath, pkg.basePackage.name);
     else
     {
         const subprojects = NativePath(cfg.subprojectsPath);
 
-        return new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename);
+        return new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename, pkg.basePackage.name);
     }
 }
 
