@@ -45,11 +45,6 @@ void createMesonFiles(Dub dub, in Cfg cfg)
 
     foreach(currPkg; dub.project.getTopologicalPackageList)
     {
-        auto meson_build = processedPackages.require(
-            currPkg.basePackage.name,
-            createMesonFile(currPkg, cfg, isRootPackage)
-        );
-
         if(cfg.verbose)
         {
             import std.stdio;
@@ -60,11 +55,16 @@ void createMesonFiles(Dub dub, in Cfg cfg)
             );
         }
 
+        auto meson_build = processedPackages.require(
+            currPkg.basePackage.name,
+            createMesonFile(currPkg, cfg, isRootPackage)
+        );
+
         if(meson_build !is null)
             meson_build.processDubPackage(currPkg);
 
         processedPackages[currPkg.basePackage.name] = meson_build;
-        isRootPackage = false; // only first package is root package
+        isRootPackage = false; // only first package is a root package
     }
 }
 

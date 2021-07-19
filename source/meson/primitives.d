@@ -66,7 +66,7 @@ enum Group : string
 {
     sources = `sources`,
     include_directories = `include_directories`,
-    string_imports = `__string_imports__`,
+    string_imports = `string_imports`,
     dependencies = `dependencies`,
     external_dependencies = `__external_dependencies__`,
     subprojects = `__subprojects__`,
