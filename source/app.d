@@ -13,6 +13,7 @@ struct Cfg
 	bool bare;
 	bool fetch;
 	PlacementLocation placementLocation = PlacementLocation.user;
+	bool overrideMesonBuildFiles;
 	bool verbose;
 }
 
@@ -31,6 +32,7 @@ void main(string[] args)
 			"bare", `Read only packages contained in the current directory`, &bare,
 			"fetch-only", `Only fetch all non-optional dependencies`, &fetch,
 			"cache", `Puts any fetched packages in the specified location [local|system|user]`, &placementLocation,
+			"override", `Generate files for already mesonified packages and its dependencies`, &overrideMesonBuildFiles,
 			`verbose`, `Print diagnostic output`, &verbose,
 		);
 

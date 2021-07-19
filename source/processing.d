@@ -78,9 +78,9 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
     import dub.internal.vibecompat.core.file;
 
     immutable filename = `meson.build`;
-    const NativePath mesonBuildFilePath = pkg.path ~ filename;
+    const NativePath mesonBuildFilePath = pkg.basePackage.path ~ filename;
 
-    if(mesonBuildFilePath.existsFile)
+    if(!cfg.overrideMesonBuildFiles && mesonBuildFilePath.existsFile)
     {
         if(cfg.verbose)
             writeln("file ", mesonBuildFilePath, " exists, skipping");
@@ -92,9 +92,12 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
         return new RootMesonBuildFile(mesonBuildFilePath, pkg.basePackage.name);
     else
     {
-        const subprojects = NativePath(cfg.subprojectsPath);
+        import std.conv: to;
 
-        return new RootMesonBuildFile(subprojects~`packagefiles`~(pkg.name~`_changes`)~filename, pkg.basePackage.name);
+        const subprojects = NativePath(cfg.subprojectsPath);
+        const dir = pkg.basePackage.path.head.name ~ `_changes`;
+
+        return new RootMesonBuildFile(subprojects~`packagefiles`~dir~filename, pkg.basePackage.name);
     }
 }
 
