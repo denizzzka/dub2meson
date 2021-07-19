@@ -75,29 +75,27 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
 {
     import dub.internal.vibecompat.core.file;
 
-    immutable filename = `meson.build`;
-    const NativePath mesonBuildFilePath = pkg.path ~ filename;
-
-    if(!cfg.overrideMesonBuildFiles && mesonBuildFilePath.existsFile)
+    if(!cfg.overrideMesonBuildFiles && pkg.path.existsFile)
     {
         if(cfg.verbose)
-            writeln("file ", mesonBuildFilePath, " exists, skipping");
+            writeln("file ", pkg.path, " exists, skipping");
 
         return null;
     }
 
+    NativePath path;
+
     if(isRootPackage)
-        return new RootMesonBuildFile(mesonBuildFilePath, pkg.name);
+        path = NativePath();
     else
     {
-        import std.conv: to;
-
         const subprojects = NativePath(cfg.subprojectsPath);
         const relDir = pkg.path.relativeTo(pkg.basePackage.path);
-        const dir = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
 
-        return new RootMesonBuildFile(dir~filename, pkg.basePackage.name);
+        path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
     }
+
+    return new RootMesonBuildFile(path, pkg.name);
 }
 
 void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
@@ -224,13 +222,11 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
 
             if(bo.buildLibrary)
                 processExecOrLib(meson_build, conf.name, pkg, bo);
-
-            conf.buildSettings.targetType.writeln;
         }
     }
 
-    meson_build.path.writeln;
-    meson_build.writeln;
+    //~ meson_build.path.writeln;
+    //~ meson_build.writeln;
     //~ pkg.recipe.configurations.writeln;
     //~ pkg.recipe.buildSettings.writeln;
 }

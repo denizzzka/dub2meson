@@ -52,4 +52,8 @@ void main(string[] args)
 
 	if(!cfg.fetch)
 		dub.createMesonFiles(cfg);
+
+	import meson.build_file: RootMesonBuildFile;
+
+	RootMesonBuildFile.rewriteFiles(cfg);
 }

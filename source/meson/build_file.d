@@ -3,9 +3,11 @@ module meson.build_file;
 import dub.internal.vibecompat.inet.path: NativePath;
 import meson.primitives;
 import meson.mangling: mangle;
+import app: Cfg;
 
 class MesonBuildFile
 {
+    static immutable filename = `meson.build`;
     const NativePath path;
     Section rootSection;
 
@@ -55,6 +57,32 @@ class MesonBuildFile
         rootSection.addToGroup(grp, arrName, arrSection);
 
         lines.addLines(elems);
+    }
+
+    package void rewriteFile(in Cfg cfg, NativePath destDir)
+    {
+        import meson.primitives: Lines;
+
+        Lines content;
+        rootSection.toLines(content, 0);
+
+        destDir ~= destDir ~ path;
+        const destFile = destDir ~ MesonBuildFile.filename;
+
+        static import std.stdio;
+        static import std.file;
+
+        if(cfg.verbose)
+            std.stdio.writeln("Write file ", destFile);
+
+        if(!cfg.annotate)
+        {
+            import vibe.core.file;
+            import std.typecons: Yes;
+
+            createDirectory(destDir, Yes.recursive);
+            std.file.write(destFile.toString, content.data);
+        }
     }
 }
 
@@ -175,6 +203,14 @@ class RootMesonBuildFile : MesonBuildFile
         sec.add = new UnsortedLines([oneline]);
 
         add(grp, name, sec);
+    }
+
+    static void rewriteFiles(in Cfg cfg)
+    {
+        const destDir = NativePath(cfg.rootPath);
+
+        foreach(f; allMesonBuildFiles.byValue)
+            f.rewriteFile(cfg, destDir);
     }
 
     override string toString() const
