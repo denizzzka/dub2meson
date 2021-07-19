@@ -2,6 +2,7 @@ module meson.build_file;
 
 import dub.internal.vibecompat.inet.path: NativePath;
 import meson.primitives;
+import meson.mangling: mangle;
 
 class MesonBuildFile
 {
@@ -116,13 +117,15 @@ class RootMesonBuildFile : MesonBuildFile
 
     private void addSubproject(string name, string[] default_options, string version_)
     {
-        if(getSectionOrNull(Group.subprojects, name) !is null)
+        immutable grp = Group.subprojects;
+
+        if(getSectionOrNull(grp, name) !is null)
             return;
 
         auto s = addFunc(
-            Group.subprojects,
+            grp,
             name,
-            name~`_sub = subproject`,
+            name.mangle(grp)~` = subproject`,
             [name.quote],
             version_ ? [`version`: version_] : null,
         );
