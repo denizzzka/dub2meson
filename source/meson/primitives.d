@@ -70,6 +70,8 @@ enum Group : string
     dependencies = `dependencies`,
     external_dependencies = `__external_dependencies__`,
     subprojects = `__subprojects__`,
+    executables = `__executables__`,
+    libraries = `__libraries__`,
 }
 
 // Key ID here is name of DUB config or external dependency name

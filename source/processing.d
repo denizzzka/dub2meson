@@ -243,7 +243,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
     auto dep = meson_build.addFunc(
         Group.dependencies,
         confName,
-        confName~`_dep = declare_dependency`,
+        confName.mangle(Group.dependencies)~` = declare_dependency`,
     );
 
     if(depsList.length != 0)
@@ -251,7 +251,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
         dep.addArray(
             `dependencies`.keyword,
             Bracket.SQUARE,
-            depsList.map!(a => a~`_dep`).array
+            depsList.map!(a => a.mangle(Group.dependencies)).array
         );
     }
 
@@ -275,18 +275,18 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
 
 void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
-    string name;
-    string suffix;
+    Group grp;
+    string func;
 
     if(bo.buildExecutable)
     {
-        name = `executable`;
-        suffix = `_exe`;
+        grp = Group.executables;
+        func = `executable`;
     }
     else if(bo.buildLibrary)
     {
-        name = `library`;
-        suffix = `_lib`;
+        grp = Group.libraries;
+        func = `library`;
     }
     else
         assert(false);
@@ -294,7 +294,7 @@ void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Pac
     auto exeOrLib = meson_build.addFunc(
         null,
         confName,
-        confName~suffix~` = `~name,
+        confName.mangle(grp)~` = `~func,
         [confName.quote],
     );
 

@@ -28,6 +28,8 @@ string mangle(string name, Group group) pure
         case dependencies: suffix = `dep`; break;
         case external_dependencies: suffix = `dep`; break;
         case subprojects: suffix = `sub`; break;
+        case executables: suffix = `exe`; break;
+        case libraries: suffix = `lib`; break;
 
         default:
             assert(false, "Unsupported group: " ~ group.to!string);
