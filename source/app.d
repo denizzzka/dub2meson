@@ -64,5 +64,5 @@ void main(string[] args)
 
 	import meson.build_file: RootMesonBuildFile;
 
-	RootMesonBuildFile.rewriteFiles(cfg);
+	RootMesonBuildFile.rewriteFiles();
 }

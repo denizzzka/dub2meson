@@ -3,7 +3,6 @@ module meson.build_file;
 import dub.internal.vibecompat.inet.path: NativePath;
 import meson.primitives;
 import meson.mangling: mangle, substForbiddenSymbols;
-import app: Cfg; //FIXME: remove
 import app: cfg;
 
 class MesonBuildFile
@@ -64,7 +63,7 @@ class MesonBuildFile
         lines.addLines(elems);
     }
 
-    package void rewriteFile(in Cfg cfg, NativePath destDir)
+    package void rewriteFile(NativePath destDir)
     {
         import meson.primitives: Lines;
 
@@ -227,12 +226,12 @@ class RootMesonBuildFile : MesonBuildFile
         add(grp, name, sec);
     }
 
-    static void rewriteFiles(in Cfg cfg)
+    static void rewriteFiles()
     {
         const destDir = NativePath(cfg.rootPath);
 
         foreach(f; allMesonBuildFiles.byValue)
-            f.rewriteFile(cfg, destDir);
+            f.rewriteFile(destDir);
     }
 
     override string toString() const
