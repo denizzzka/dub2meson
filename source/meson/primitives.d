@@ -68,6 +68,7 @@ enum Group : string
     include_directories = `include_directories`,
     string_imports = `__string_imports__`,
     dependencies = `dependencies`,
+    external_dependencies = `__external_dependencies__`,
     subprojects = `__subprojects__`,
 }
 

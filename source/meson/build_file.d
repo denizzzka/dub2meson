@@ -99,14 +99,24 @@ class RootMesonBuildFile : MesonBuildFile
         return ret;
     }
 
-    bool isGroupAvailable(string name) const
+    Section getSectionOrNull(Group group, string name)
     {
-        return (name in rootSection.groups) !is null;
+        auto g = group in rootSection.groups;
+
+        if(g is null)
+            return null;
+
+        auto s = name in *g;
+
+        if(s is null)
+            return null;
+        else
+            return *s;
     }
 
     private void addSubproject(string name, string[] default_options, string version_)
     {
-        if(isGroupAvailable(name))
+        if(getSectionOrNull(Group.subprojects, name) !is null)
             return;
 
         auto s = addFunc(
@@ -125,20 +135,28 @@ class RootMesonBuildFile : MesonBuildFile
             );
     }
 
-    private bool[string] dependencies; //TODO: join into namedArrays
-
     void addExternalDependency(string name)
     {
         import std.format: format;
 
-        if(isGroupAvailable(name))
+        if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
 
         addSubproject(name, null, null);
 
-        rootSection.add = new UnsortedLines([`%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name)]);
+        addOneLineDirective(
+            Group.external_dependencies,
+            name,
+            `%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name)
+        );
+    }
 
-        dependencies[name] = true;
+    private void addOneLineDirective(Group grp, string name, string oneline)
+    {
+        auto sec = new Section;
+        sec.add = new UnsortedLines([oneline]);
+
+        add(grp, name, sec);
     }
 
     override string toString() const
