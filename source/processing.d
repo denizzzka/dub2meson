@@ -86,7 +86,7 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
     NativePath path;
 
     if(isRootPackage)
-        path = NativePath();
+        path = NativePath("./");
     else
     {
         const subprojects = NativePath(cfg.subprojectsPath);
@@ -95,7 +95,7 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
         path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
     }
 
-    return new RootMesonBuildFile(path, pkg.name);
+    return new RootMesonBuildFile(pkg, path);
 }
 
 void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)

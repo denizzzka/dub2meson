@@ -8,13 +8,17 @@ import app: Cfg;
 class MesonBuildFile
 {
     static immutable filename = `meson.build`;
-    const NativePath path;
+    const NativePath fileDir;
     Section rootSection;
 
-    private this(NativePath filePath)
+    private this(NativePath _fileDir)
     {
+        import std.stdio;
+        _fileDir.writeln;
+        assert(_fileDir.endsWithSlash);
+
         rootSection = new Section();
-        path = filePath;
+        fileDir = _fileDir;
     }
 
     private MesonBuildFile[] children;
@@ -66,7 +70,7 @@ class MesonBuildFile
         Lines content;
         rootSection.toLines(content, 0);
 
-        destDir ~= destDir ~ path;
+        destDir ~= destDir ~ fileDir;
         const destFile = destDir ~ MesonBuildFile.filename;
 
         static import std.stdio;
@@ -104,15 +108,22 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 
 class RootMesonBuildFile : MesonBuildFile
 {
-    const string dubBasePackageName;
+    import dub.package_: Package;
 
-    this(NativePath filePath, string basePackageName)
+    const Package pkg;
+
+    this(in Package _pkg, in NativePath fileDir)
     {
-        super(filePath);
+        super(fileDir);
 
-        dubBasePackageName = basePackageName;
+        pkg = _pkg;
 
-        allMesonBuildFiles[filePath] = this;
+        allMesonBuildFiles[fileDir] = this;
+    }
+
+    string dubBasePackageName() const @property
+    {
+        return pkg.basePackage.name;
     }
 
     ref Section add(Group group, string name, ref return Section sec)
