@@ -29,10 +29,15 @@ class UnsortedLines : PayloadPiece
 
     override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
     {
-        foreach(e; lines)
+        foreach(i, e; lines)
         {
             ret.addOffset(offsetCnt);
-            ret ~= e ~ ",\n";
+            ret ~= e;
+
+            if(i + 1 < lines.length)
+                ret ~= ',';
+
+            ret ~= "\n";
         }
 
         return ret;
