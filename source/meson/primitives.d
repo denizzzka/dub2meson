@@ -5,6 +5,8 @@ import std.array: Appender;
 
 abstract class PayloadPiece
 {
+    private bool trailingComma = true; // FIXME: ugly code
+
     ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const;
 }
 
@@ -12,8 +14,9 @@ class UnsortedLines : PayloadPiece
 {
     protected string[] lines;
 
-    package this(string[] l = null)
+    package this(string[] l = null, bool _trailingComma = true)
     {
+        trailingComma = _trailingComma;
         lines = l;
     }
 
@@ -29,12 +32,12 @@ class UnsortedLines : PayloadPiece
 
     override ref Lines toLines(ref return Lines ret, in size_t offsetCnt) const
     {
-        foreach(i, e; lines)
+        foreach(e; lines)
         {
             ret.addOffset(offsetCnt);
             ret ~= e;
 
-            if(i + 1 < lines.length)
+            if(trailingComma)
                 ret ~= ',';
 
             ret ~= "\n";
@@ -60,7 +63,12 @@ class SortedLines : UnsortedLines
         foreach(e; copy.sort)
         {
             ret.addOffset(offsetCnt);
-            ret ~= e ~ ",\n";
+            ret ~= e;
+
+            if(trailingComma)
+                ret ~= ',';
+
+            ret ~= "\n";
         }
 
         return ret;
@@ -137,7 +145,6 @@ class Statement : OffsetSection
 {
     string firstLine;
     Bracket bracket;
-    const bool trailingComma;
 
     private this(string _firstLine, Bracket br, bool _trailingComma)
     {
