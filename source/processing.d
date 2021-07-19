@@ -38,8 +38,6 @@ void fetchAllNonOptionalDependencies(Dub dub)
 
 void createMesonFiles(Dub dub, in Cfg cfg)
 {
-    import std.file: mkdirRecurse;
-
     bool isRootPackage = true;
     RootMesonBuildFile[string] processedPackages;
 
@@ -56,14 +54,14 @@ void createMesonFiles(Dub dub, in Cfg cfg)
         }
 
         auto meson_build = processedPackages.require(
-            currPkg.basePackage.name,
+            currPkg.name,
             createMesonFile(currPkg, cfg, isRootPackage)
         );
 
         if(meson_build !is null)
             meson_build.processDubPackage(currPkg);
 
-        processedPackages[currPkg.basePackage.name] = meson_build;
+        processedPackages[currPkg.name] = meson_build;
         isRootPackage = false; // only first package is a root package
     }
 }
@@ -113,12 +111,12 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
             null,
             `project`,
             [
-                pkg.basePackage.name.quote,
+                pkg.name.quote,
                 `['d']`,
             ],
             [
-                `version`: pkg.basePackage.recipe.version_,
-                `license`: pkg.basePackage.recipe.license,
+                `version`: pkg.recipe.version_,
+                `license`: pkg.recipe.license,
                 `meson_version`: `>=0.58.1`,
             ]
         );
@@ -214,7 +212,7 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
                     break;
 
                 default:
-                    enforce(false, pkg.basePackage.name~`: unsupported target type: `~conf.buildSettings.targetType.to!string);
+                    enforce(false, pkg.name~`: unsupported target type: `~conf.buildSettings.targetType.to!string);
                     return;
             }
 
