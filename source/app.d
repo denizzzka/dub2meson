@@ -17,11 +17,13 @@ struct Cfg
 	bool verbose;
 }
 
+private Cfg _cfg;
+
+ref const(Cfg) cfg() { return _cfg; }
+
 void main(string[] args)
 {
-	Cfg cfg;
-
-	with(cfg)
+	with(_cfg)
 	{
 		//TODO: add --registry=VALUE and --skip-registry=VALUE
 		auto helpInformation = getopt(
