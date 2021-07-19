@@ -119,14 +119,14 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
             ]
         );
 
-        project.addArray(
-            `default_options`.keyword,
-            Bracket.SQUARE,
-            [
-                "FIXME".quote,
-                "FIXME".quote,
-            ]
-        );
+        //~ project.addArray(
+            //~ `default_options`.keyword,
+            //~ Bracket.SQUARE,
+            //~ [
+                //~ "FIXME".quote,
+                //~ "FIXME".quote,
+            //~ ]
+        //~ );
     }
 
     //Collect source files
