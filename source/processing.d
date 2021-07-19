@@ -78,7 +78,7 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
     import dub.internal.vibecompat.core.file;
 
     immutable filename = `meson.build`;
-    const NativePath mesonBuildFilePath = pkg.basePackage.path ~ filename;
+    const NativePath mesonBuildFilePath = pkg.path ~ filename;
 
     if(!cfg.overrideMesonBuildFiles && mesonBuildFilePath.existsFile)
     {
@@ -89,15 +89,16 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
     }
 
     if(isRootPackage)
-        return new RootMesonBuildFile(mesonBuildFilePath, pkg.basePackage.name);
+        return new RootMesonBuildFile(mesonBuildFilePath, pkg.name);
     else
     {
         import std.conv: to;
 
         const subprojects = NativePath(cfg.subprojectsPath);
-        const dir = pkg.basePackage.path.head.name ~ `_changes`;
+        const relDir = pkg.path.relativeTo(pkg.basePackage.path);
+        const dir = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
 
-        return new RootMesonBuildFile(subprojects~`packagefiles`~dir~filename, pkg.basePackage.name);
+        return new RootMesonBuildFile(dir~filename, pkg.basePackage.name);
     }
 }
 
@@ -106,7 +107,6 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
     immutable bool isSubPackage = pkg.parentPackage !is null;
 
     // Adding project()
-    if(!isSubPackage)
     {
         auto project = meson_build.addFunc(
             null,
