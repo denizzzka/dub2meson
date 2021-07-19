@@ -6,21 +6,32 @@ string mangle(string name, Group group) pure
 {
     import std.conv: to;
 
+    // Special case for sources
+    if(
+        name == "" &&
+        (
+            group == Group.sources ||
+            group == Group.include_directories ||
+            group == Group.string_imports
+        )
+    )
+        return group;
+
     string suffix;
 
     with(Group)
     switch(group)
     {
-        case sources: suffix = `_src`; break;
-        case include_directories: suffix = `_include_dirs`; break;
-        case string_imports: suffix = `_strings`; break;
-        case dependencies: suffix = `_dep`; break;
-        case external_dependencies: suffix = `_dep`; break;
-        case subprojects: suffix = `_sub`; break;
+        case sources: suffix = `src`; break;
+        case include_directories: suffix = `include`; break;
+        case string_imports: suffix = `strings`; break;
+        case dependencies: suffix = `dep`; break;
+        case external_dependencies: suffix = `dep`; break;
+        case subprojects: suffix = `sub`; break;
 
         default:
             assert(false, "Unsupported group: " ~ group.to!string);
     }
 
-    return name ~ suffix;
+    return name ~ '_' ~ suffix;
 }

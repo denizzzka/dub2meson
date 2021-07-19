@@ -3,6 +3,7 @@ module common;
 import dub.dub;
 import dub.internal.vibecompat.inet.path: NativePath;
 import std.exception: enforce;
+import meson.mangling: mangle;
 import app;
 
 Dub createDub(in Cfg cfg)
@@ -120,17 +121,13 @@ void createMesonFile(in Package pkg, in Cfg cfg)
     {
         import dub_stuff.collect: collectFiles;
 
-        const typeName = grp;
-
         auto collected = collectFiles(pkg.path, searchPaths, wildcard);
 
         foreach(suffix, files; pkg.recipe.buildSettings.sourceFiles)
             collected[suffix] ~= files;
 
-        foreach(suffix, ref paths; collected)
+        foreach(prefix, ref paths; collected)
         {
-            const underscore = (suffix == "") ? "" : "_";
-
             if(grp == Group.include_directories)
             {
                 // remove file part and '/' from paths
@@ -144,7 +141,7 @@ void createMesonFile(in Package pkg, in Cfg cfg)
 
             paths = paths.sort.uniq.map!(a => a.quote).array;
 
-            meson_build.addFilesToFilesArrays(grp, suffix~underscore~typeName, paths);
+            meson_build.addFilesToFilesArrays(grp, prefix.mangle(grp), paths);
         }
     }
 
