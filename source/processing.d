@@ -301,6 +301,6 @@ void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Pac
     auto deps = exeOrLib.addArray(
         `dependencies`.keyword,
         Bracket.SQUARE,
-        [confName.quote]
+        [confName.mangle(Group.dependencies)]
     );
 }
