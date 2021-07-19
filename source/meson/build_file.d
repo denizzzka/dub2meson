@@ -150,7 +150,11 @@ class RootMesonBuildFile : MesonBuildFile
         addOneLineDirective(
             Group.external_dependencies,
             name,
-            `%s_dep = %s_sub.get_variable('%s_dep')`.format(name, name, name)
+            `%s = %s.get_variable('%s')`.format(
+                name.mangle(Group.dependencies),
+                name.mangle(Group.subprojects),
+                name.mangle(Group.dependencies),
+            )
         );
     }
 

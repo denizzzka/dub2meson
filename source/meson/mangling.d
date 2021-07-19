@@ -1,11 +1,10 @@
 module meson.mangling;
 
 import meson.primitives: Group;
+import std.conv: to;
 
 string mangle(string name, Group group) pure
 {
-    import std.conv: to;
-
     // Special case for sources
     if(
         name == "" &&
@@ -35,5 +34,18 @@ string mangle(string name, Group group) pure
             assert(false, "Unsupported group: " ~ group.to!string);
     }
 
-    return name ~ '_' ~ suffix;
+    import std.algorithm.iteration: substitute;
+    import std.array: array;
+
+    return name.substForbiddenSymbols ~ '_' ~ suffix;
+}
+
+private string substForbiddenSymbols(string s) pure
+{
+    import std.algorithm.iteration: substitute;
+    import std.array: array;
+
+    return s.
+        substitute('-', '_').
+        substitute(':', '_').to!string;
 }
