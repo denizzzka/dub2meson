@@ -10,16 +10,15 @@ Dub createDub(in Cfg cfg)
 {
     //TODO: add package_suppliers and options
 
+    import std.file: getcwd;
+    import meson.wrap: defaultMesonPackageSuppliers;
+
     Dub dub;
 
     if(cfg.bare)
-    {
-        import std.file: getcwd;
-
         dub = new Dub(NativePath(getcwd()));
-    }
     else
-        dub = new Dub(cfg.rootPath);
+        dub = new Dub(cfg.rootPath, defaultMesonPackageSuppliers);
 
     dub.rootPath = NativePath(cfg.rootPath);
     dub.dryRun = cfg.annotate;

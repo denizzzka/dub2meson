@@ -56,11 +56,17 @@ void main(string[] args)
 
 	import common;
 
-	auto dub = createDub(cfg);
-	dub.fetchAllNonOptionalDependencies;
+	// Fetching all dependencies to obtain recipes
+	{
+		auto defaultDub = createDub(cfg);
+		defaultDub.fetchAllNonOptionalDependencies;
+	}
 
 	if(!cfg.fetch)
+	{
+		auto dub = createDub(cfg);
 		dub.createMesonFiles(cfg);
+	}
 
 	import meson.build_file: RootMesonBuildFile;
 
