@@ -13,8 +13,6 @@ class MesonBuildFile
 
     private this(NativePath _fileDir)
     {
-        import std.stdio;
-        _fileDir.writeln;
         assert(_fileDir.endsWithSlash);
 
         rootSection = new Section();
@@ -77,7 +75,7 @@ class MesonBuildFile
         static import std.file;
 
         if(cfg.verbose)
-            std.stdio.writeln("Write file ", destFile);
+            std.stdio.writeln(`Write file `, destFile.toString.quote);
 
         if(!cfg.annotate)
         {
@@ -113,19 +111,16 @@ class RootMesonBuildFile : MesonBuildFile
     import dub.package_: Package;
 
     const Package pkg;
+    const string rootBasePackageName;
 
-    this(in Package _pkg, in NativePath fileDir)
+    this(in Package _pkg, in NativePath fileDir, in string _rootBasePackageName)
     {
         super(fileDir);
 
         pkg = _pkg;
+        rootBasePackageName = _rootBasePackageName;
 
         allMesonBuildFiles[fileDir] = this;
-    }
-
-    string dubBasePackageName() const @property
-    {
-        return pkg.basePackage.name;
     }
 
     ref Section add(Group group, string name, ref return Section sec)
@@ -188,18 +183,19 @@ class RootMesonBuildFile : MesonBuildFile
             );
     }
 
-    //FIXME: need to know base dependency name
-    void addExternalDependency(string dependencyName)
+    import dub.dependency: PackageDependency;
+
+    void addExternalDependency(in PackageDependency pkgDep)
     {
         import std.format: format;
         import meson.wrap: createWrapFile;
 
-        // If depends from this Meson project it isn't need to add "subproject" directive
-        if(dependencyName == dubBasePackageName)
+        // If something depends from this Meson project it isn't need to add "subproject" directive
+        if(pkgDep.name /*FIXME: fetch base name*/ == rootBasePackageName)
             return;
 
         //TODO: subprojects support
-        const name = dependencyName;
+        const name = pkgDep.name;
 
         // Already defined?
         if(getSectionOrNull(Group.external_dependencies, name) !is null)

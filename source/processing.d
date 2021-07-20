@@ -53,9 +53,11 @@ void createMesonFiles(Dub dub, in Cfg cfg)
             );
         }
 
+        const rootBasePackageName = dub.project.name;
+
         auto meson_build = processedPackages.require(
             currPkg.name,
-            createMesonFile(currPkg, cfg, isRootPackage)
+            createMesonFile(currPkg, cfg, rootBasePackageName)
         );
 
         if(meson_build !is null)
@@ -71,7 +73,7 @@ import meson.build_file;
 import meson.primitives;
 import std.stdio;
 
-RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPackage)
+RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string rootBasePackageName)
 {
     import dub.internal.vibecompat.core.file;
 
@@ -85,6 +87,8 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
 
     NativePath path;
 
+    const isRootPackage = (pkg.basePackage.name == rootBasePackageName);
+
     if(isRootPackage)
         path = NativePath("./");
     else
@@ -95,7 +99,7 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in bool isRootPac
         path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
     }
 
-    return new RootMesonBuildFile(pkg, path);
+    return new RootMesonBuildFile(pkg, path, rootBasePackageName);
 }
 
 void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
@@ -242,14 +246,23 @@ struct BuildOptions
     bool forceStaticLib;
 }
 
+//FIXME: remove confName arg?
 void processDependency(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     import std.array: array;
+    import dub.dependency: PackageDependency;
 
-    const depsList = pkg.getDependencies(confName).byKey.array;
+    const PackageDependency[] depsList = pkg.getAllDependencies();
+    bool[string] processedDeps;
 
     foreach(ref e; depsList)
+    {
+        enforce(!(e.name in processedDeps), `Multiple deps with different specs isn't supported for now`);
+
         meson_build.addExternalDependency(e);
+
+        processedDeps[e.name] = true;
+    }
 
     auto dep = meson_build.addFunc(
         Group.dependencies,
@@ -262,7 +275,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
         dep.addArray(
             `dependencies`.keyword,
             Bracket.SQUARE,
-            depsList.map!(a => a.mangle(Group.dependencies)).array
+            depsList.map!(a => a.name.mangle(Group.dependencies)).array
         );
     }
 
