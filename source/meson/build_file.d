@@ -104,8 +104,6 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
     }
 }
 
-private bool[string] wrapFiles;
-
 class RootMesonBuildFile : MesonBuildFile
 {
     import dub.package_: Package;
@@ -162,11 +160,6 @@ class RootMesonBuildFile : MesonBuildFile
         if(getSectionOrNull(grp, name) !is null)
             return;
 
-        import meson.wrap: createWrapFile;
-
-        if(!(name in wrapFiles))
-            pkg.createWrapFile;
-
         auto s = addFunc(
             grp,
             name,
@@ -190,7 +183,7 @@ class RootMesonBuildFile : MesonBuildFile
         import std.format: format;
         import meson.wrap: createWrapFile;
 
-        // If something depends from this Meson project it isn't need to add "subproject" directive
+        // If something depends from root project it isn't necessary to add external dependency ("subproject" directive)
         if(pkgDep.name /*FIXME: fetch base name*/ == rootBasePackageName)
             return;
 
@@ -200,6 +193,8 @@ class RootMesonBuildFile : MesonBuildFile
         // Already defined?
         if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
+
+        createWrapFile(pkgDep);
 
         addSubproject(name, null, null);
 

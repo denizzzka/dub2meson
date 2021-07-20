@@ -1,25 +1,26 @@
 module meson.wrap;
 
 import dub.internal.vibecompat.inet.path: NativePath;
-import dub.package_: Package;
+import dub.dependency: PackageDependency;
 import meson.mangling: substForbiddenSymbols;
 import app: cfg;
 import std.stdio;
 
 private bool[string] wrappedBasePackages;
 
-void createWrapFile(in Package _pkg)
+void createWrapFile(in PackageDependency pkgDep)
+in(!pkgDep.spec.optional)
 {
     // This function works only with base directories of subpackages
-    auto pkg = _pkg.basePackage;
+    //~ auto pkg = _pkg.basePackage;
 
-    if(pkg.name in wrappedBasePackages) return;
-    wrappedBasePackages[pkg.basePackage.name] = true;
+    if(pkgDep.name in wrappedBasePackages) return;
+    wrappedBasePackages[pkgDep.name] = true;
 
-    auto wrapFilePath = cfg.directSubprojectsDir~(pkg.name.substForbiddenSymbols~`.wrap`);
+    auto wrapFilePath = cfg.directSubprojectsDir~(pkgDep.name.substForbiddenSymbols~`.wrap`);
 
     if(cfg.verbose)
-        writefln("Write wrap file for package '%s' ('%s')", pkg.name, wrapFilePath);
+        writefln("Write wrap file for package '%s' ('%s')", pkgDep.name, wrapFilePath);
 
     if(!cfg.annotate)
     {
