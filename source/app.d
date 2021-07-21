@@ -63,7 +63,7 @@ void main(string[] args)
 	{
 		// Just fetching all dependencies
 
-		auto dub = createDub(cfg, null, cfg.placementLocation);
+		auto dub = createDub(cfg, null, cfg.placementLocation, cfg.annotate);
 		dub.fetchAllNonOptionalDependencies;
 
 		return;
@@ -79,12 +79,17 @@ void main(string[] args)
 		tmpPath.createDirectory;
 		//FIXME: remove tmp dir after using
 
-		auto pm = new PackageManager(tmpPath, tmpPath, tmpPath, false);
-		auto dub = createDub(cfg, pm, PlacementLocation.local);
-		dub.fetchAllNonOptionalDependencies;
+		if(cfg.verbose)
+		{
+			import dub.internal.vibecompat.core.log: LogLevel, setLogLevel;
 
-		import meson.wrap: packagesHttpUrls;
-		packagesHttpUrls.writeln;
+			setLogLevel = LogLevel.diagnostic;
+			//~ setLogLevel = LogLevel.debug_;
+		}
+
+		auto pm = new PackageManager(tmpPath, tmpPath, tmpPath, PlacementLocation.local, false);
+		auto dub = createDub(cfg, pm, PlacementLocation.local, false);
+		dub.fetchAllNonOptionalDependencies;
 
 		// All other magic is here
 		dub.createMesonFiles(cfg);

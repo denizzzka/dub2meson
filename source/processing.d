@@ -8,7 +8,7 @@ import std.exception: enforce;
 import meson.mangling: mangle;
 import app;
 
-Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl)
+Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl, in bool dryRun)
 {
     //TODO: add package_suppliers and options
 
@@ -28,8 +28,8 @@ Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl)
     if(packageManager !is null)
         dub.m_packageManager = packageManager;
 
-    dub.dryRun = cfg.annotate;
-    dub.defaultPlacementLocation = pl;
+    dub.dryRun = dryRun;
+    dub.placementLocation = pl;
 
     dub.loadPackage();
 

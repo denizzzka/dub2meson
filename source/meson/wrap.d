@@ -6,33 +6,38 @@ import meson.mangling: substForbiddenSymbols;
 import app: cfg;
 import std.stdio;
 import std.exception: enforce;
+import vibe.core.file;
 
 private bool[string] wrappedBasePackages;
 
 void createWrapFile(in PackageDependency pkgDep)
 in(!pkgDep.spec.optional)
 {
-    // This function works only with base directories of subpackages: getBasePackageName
-    //~ auto pkg = _pkg.basePackage;
+    import dub.recipe.packagerecipe: getBasePackageName;
 
-    if(pkgDep.name in wrappedBasePackages) return;
-    wrappedBasePackages[pkgDep.name] = true;
+    const pkgDepName = pkgDep.name.getBasePackageName;
 
-    //~ import std.stdio;
-    //~ pkgDep.spec.repository.remote.writeln;
+    if(pkgDepName in wrappedBasePackages) return;
+    wrappedBasePackages[pkgDepName] = true;
 
-    auto wrapFilePath = cfg.directSubprojectsDir~(pkgDep.name.substForbiddenSymbols~`.wrap`);
+    auto wrapFilePath = cfg.directSubprojectsDir~(pkgDepName.substForbiddenSymbols~`.wrap`);
 
     if(cfg.verbose)
-        writefln("Write wrap file for package '%s' ('%s')", pkgDep.name, wrapFilePath);
+        writefln("Write wrap file for package '%s' ('%s')", pkgDepName, wrapFilePath);
 
     if(!cfg.annotate)
     {
-    //TODO: write file content
-    //~ [wrap-git]
-    //~ url = https://github.com/llvm/llvm-project.git
-    //~ depth = 1
-    //~ revision = llvmorg-10.0.0-rc2
+        const wd = pkgDepName in wrapData;
+        enforce(wd !is null);
+
+        with(wd)
+        wrapFilePath.writeFileUTF8(
+            "[wrap-file]\n"~
+            //~ `directory = `~packageId~'\n'~
+            `source_url = `~url.toString~'\n'~
+            `source_hash = `~source_hash~'\n'~
+            `patch_directory = `~packageId~"_changes\n"
+        );
     }
 }
 
@@ -88,11 +93,30 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
 
 	override void fetchPackage(NativePath path, string packageId, Dependency dep, bool pre_release)
 	{
-        packagesHttpUrls[packageId] = genPackageDownloadUrl(packageId, dep, pre_release);
-        packagesHttpUrls.writeln;
-
         super.fetchPackage(path, packageId, dep, pre_release);
+
+        WrapData wd;
+        wd.packageId = packageId;
+        wd.url = genPackageDownloadUrl(packageId, dep, pre_release);
+        wd.source_hash = path.calcSha256ForFile;
+
+        wrapData[packageId] = wd;
     }
 }
 
-/*private*/ URL[string] packagesHttpUrls;
+private WrapData[string] wrapData;
+
+struct WrapData
+{
+    string packageId;
+    URL url;
+    string source_hash;
+}
+
+string calcSha256ForFile(NativePath file)
+{
+    import std.digest;
+    import std.digest.sha;
+
+    return file.readFile.sha256Of[].toHexString;
+}
