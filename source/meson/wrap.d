@@ -22,6 +22,11 @@ void createWrapFile(in string pkgDepName)
 
     if(!cfg.annotate)
     {
+        const dir = wrapFilePath.parentPath;
+
+        if(!dir.existsFile)
+            dir.createDirectory;
+
         const wd = pkgDepName in wrapData;
         enforce(wd !is null);
 
@@ -96,8 +101,10 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
         WrapData wd;
         wd.packageId = packageId;
         wd.url = genPackageDownloadUrl(packageId, dep, pre_release).toString;
-        wd.filename = wd.url.split('/')[$-1];
         wd.source_hash = path.calcSha256ForFile;
+
+        const spl = wd.url.split('/');
+        wd.filename = packageId~'-'~spl[$-1];
 
         wrapData[packageId] = wd;
     }
