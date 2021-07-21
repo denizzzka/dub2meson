@@ -1,12 +1,14 @@
 module common;
 
 import dub.dub;
+import dub.project: PlacementLocation;
+import dub.packagemanager: PackageManager;
 import dub.internal.vibecompat.inet.path: NativePath;
 import std.exception: enforce;
 import meson.mangling: mangle;
 import app;
 
-Dub createDub(in Cfg cfg)
+Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl)
 {
     //TODO: add package_suppliers and options
 
@@ -18,11 +20,14 @@ Dub createDub(in Cfg cfg)
     if(cfg.bare)
         dub = new Dub(NativePath(getcwd()));
     else
-        dub = new Dub(cfg.rootPath, defaultMesonPackageSuppliers);
+        dub = new Dub(cfg.rootPath);
 
-    dub.rootPath = NativePath(cfg.rootPath);
+    if(packageManager !is null)
+        dub.m_packageManager = packageManager;
+
+    dub.m_packageSuppliers = defaultMesonPackageSuppliers();
     dub.dryRun = cfg.annotate;
-    dub.defaultPlacementLocation = cfg.placementLocation;
+    dub.defaultPlacementLocation = pl;
 
     dub.loadPackage();
 

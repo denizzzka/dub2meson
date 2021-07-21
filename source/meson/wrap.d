@@ -59,7 +59,7 @@ private PackageSupplier getMesonRegistryPackageSupplier(string url)
 {
     import std.algorithm: startsWith;
 
-	switch (url.startsWith("dub+", "mvn+", "file://"))
+	switch (url.startsWith("dub+", "mvn+", "file://", "https://"))
 	{
 		case 1:
 			return new RegistryMesonSubprojectSupplier(URL(url[4..$]));
@@ -67,8 +67,10 @@ private PackageSupplier getMesonRegistryPackageSupplier(string url)
 			//~ return new MavenRegistryPackageSupplier(URL(url[4..$]));
 		//~ case 3:
 			//~ return new FileSystemPackageSupplier(NativePath(url[7..$]));
-		default:
+		case 4:
 			return new RegistryMesonSubprojectSupplier(URL(url));
+		default:
+            assert(false, "Registry isn't supported: "~url);
 	}
 }
 
@@ -93,4 +95,4 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
     }
 }
 
-private URL[string] packagesHttpUrls;
+/*private*/ URL[string] packagesHttpUrls;
