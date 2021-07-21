@@ -22,10 +22,12 @@ Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl)
     else
         dub = new Dub(cfg.rootPath);
 
+    //~ dub.rootPath = NativePath(cfg.rootPath);
+    dub.m_packageSuppliers = defaultMesonPackageSuppliers();
+
     if(packageManager !is null)
         dub.m_packageManager = packageManager;
 
-    dub.m_packageSuppliers = defaultMesonPackageSuppliers();
     dub.dryRun = cfg.annotate;
     dub.defaultPlacementLocation = pl;
 

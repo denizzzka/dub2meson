@@ -80,7 +80,7 @@ void main(string[] args)
 		//FIXME: remove tmp dir after using
 
 		auto pm = new PackageManager(tmpPath, tmpPath, tmpPath, false);
-		auto dub = createDub(cfg, pm, PlacementLocation.user);
+		auto dub = createDub(cfg, pm, PlacementLocation.local);
 		dub.fetchAllNonOptionalDependencies;
 
 		import meson.wrap: packagesHttpUrls;
