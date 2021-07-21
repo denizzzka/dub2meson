@@ -10,13 +10,8 @@ import vibe.core.file;
 
 private bool[string] wrappedBasePackages;
 
-void createWrapFile(in PackageDependency pkgDep)
-in(!pkgDep.spec.optional)
+void createWrapFile(in string pkgDepName)
 {
-    import dub.recipe.packagerecipe: getBasePackageName;
-
-    const pkgDepName = pkgDep.name.getBasePackageName;
-
     if(pkgDepName in wrappedBasePackages) return;
     wrappedBasePackages[pkgDepName] = true;
 
@@ -34,7 +29,8 @@ in(!pkgDep.spec.optional)
         wrapFilePath.writeFile(cast(const ubyte[])(
             "[wrap-file]\n"~
             //~ `directory = `~packageId~'\n'~
-            `source_url = `~url.toString~'\n'~
+            `source_url = `~url~'\n'~
+            `source_filename = `~filename~'\n'~
             `source_hash = `~source_hash~'\n'~
             `patch_directory = `~packageId~"_changes\n"
         ));
@@ -93,11 +89,14 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
 
 	override void fetchPackage(NativePath path, string packageId, Dependency dep, bool pre_release)
 	{
+        import std.array: split;
+
         super.fetchPackage(path, packageId, dep, pre_release);
 
         WrapData wd;
         wd.packageId = packageId;
-        wd.url = genPackageDownloadUrl(packageId, dep, pre_release);
+        wd.url = genPackageDownloadUrl(packageId, dep, pre_release).toString;
+        wd.filename = wd.url.split('/')[$-1];
         wd.source_hash = path.calcSha256ForFile;
 
         wrapData[packageId] = wd;
@@ -109,7 +108,8 @@ private WrapData[string] wrapData;
 struct WrapData
 {
     string packageId;
-    URL url;
+    string url;
+    string filename;
     string source_hash;
 }
 

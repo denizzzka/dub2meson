@@ -182,19 +182,20 @@ class RootMesonBuildFile : MesonBuildFile
     {
         import std.format: format;
         import meson.wrap: createWrapFile;
+        import dub.recipe.packagerecipe: getBasePackageName;
 
         // If something depends from root project it isn't necessary to add external dependency ("subproject" directive)
         if(pkgDep.name /*FIXME: fetch base name*/ == rootBasePackageName)
             return;
 
         //TODO: subprojects support
-        const name = pkgDep.name;
+        const name = pkgDep.name.getBasePackageName;
 
         // Already defined?
         if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
 
-        createWrapFile(pkgDep);
+        createWrapFile(name);
 
         addSubproject(name, null, null);
 
