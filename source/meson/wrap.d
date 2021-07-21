@@ -31,13 +31,13 @@ in(!pkgDep.spec.optional)
         enforce(wd !is null);
 
         with(wd)
-        wrapFilePath.writeFileUTF8(
+        wrapFilePath.writeFile(cast(const ubyte[])(
             "[wrap-file]\n"~
             //~ `directory = `~packageId~'\n'~
             `source_url = `~url.toString~'\n'~
             `source_hash = `~source_hash~'\n'~
             `patch_directory = `~packageId~"_changes\n"
-        );
+        ));
     }
 }
 
