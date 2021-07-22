@@ -105,7 +105,7 @@ PackageRootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string 
         path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
     }
 
-    return new PackageRootMesonBuildFile(pkg, path);
+    return meson.build_file.createMesonFile(pkg, path);
 }
 
 void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)

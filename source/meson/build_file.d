@@ -4,6 +4,7 @@ import dub.internal.vibecompat.inet.path: NativePath;
 import meson.primitives;
 import meson.mangling: mangle, substForbiddenSymbols;
 import app: cfg;
+import dub.package_: Package;
 
 class MesonBuildFile
 {
@@ -108,11 +109,9 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 /// Represents root meson.build file for DUB package or subpackage
 class PackageRootMesonBuildFile : MesonBuildFile
 {
-    import dub.package_: Package;
-
     const Package pkg;
 
-    this(in Package pkg, in NativePath fileDir)
+    package this(in Package pkg, in NativePath fileDir)
     {
         this.pkg = pkg;
 
@@ -125,6 +124,11 @@ class PackageRootMesonBuildFile : MesonBuildFile
     string rootBasePackageName() const
     {
         return pkg.name;
+    }
+
+    override PackageRootMesonBuildFile createOrGetMesonBuildFile(NativePath filePath)
+    {
+        return cast(PackageRootMesonBuildFile) super.createOrGetMesonBuildFile(filePath);
     }
 
     ref Section add(Group group, string name, ref return Section sec)
@@ -245,7 +249,7 @@ class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
 {
     private static PackageRootMesonBuildFile[string] basePackageBuildFiles;
 
-    this(in Package pkg, in NativePath fileDir)
+    package this(in Package pkg, in NativePath fileDir)
     {
         import dub.recipe.packagerecipe: getBasePackageName;
 
@@ -284,4 +288,17 @@ class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
             //~ ]
         //~ );
     }
+}
+
+PackageRootMesonBuildFile createMesonFile(in Package pkg, in NativePath fileDir)
+{
+    if(pkg.name == pkg.basePackage.name)
+        return new BasePackageRootMesonBuildFile(pkg, fileDir);
+
+    auto basePkg = BasePackageRootMesonBuildFile.basePackageBuildFiles.require(
+        pkg.basePackage.name,
+        new BasePackageRootMesonBuildFile(pkg, fileDir)
+    );
+
+    return basePkg.createOrGetMesonBuildFile(fileDir);
 }
