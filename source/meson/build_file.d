@@ -242,11 +242,19 @@ class RootMesonBuildFile : MesonBuildFile
 /// Represents root meson.build file for DUB package
 class PackageRootMesonBuildFile : RootMesonBuildFile
 {
+    private static PackageRootMesonBuildFile[string] basePackageBuildFiles;
+
     this(in Package pkg, in NativePath fileDir)
     {
+        import dub.recipe.packagerecipe: getBasePackageName;
+
+        assert(pkg.name == pkg.name.getBasePackageName, `Only base packages can be represented by root meson.build file`);
+
         super(pkg, fileDir);
 
         addProject();
+
+        basePackageBuildFiles[pkg.name] = this;
     }
 
     private void addProject()
