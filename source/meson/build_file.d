@@ -24,7 +24,7 @@ class MesonBuildFile
 
     MesonBuildFile createOrGetMesonBuildFile(NativePath filePath)
     {
-        auto ret = createOrGetMesonBuildFile(filePath);
+        auto ret = .createOrGetMesonFile(filePath);
         children ~= ret;
 
         return ret;
@@ -91,8 +91,8 @@ class MesonBuildFile
 
 private static MesonBuildFile[NativePath] allMesonBuildFiles;
 
-@disable
-private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
+//FIXME: remove
+private MesonBuildFile createOrGetMesonFile(in NativePath filePath)
 {
     MesonBuildFile* bf = filePath in allMesonBuildFiles;
 
@@ -124,11 +124,6 @@ class PackageRootMesonBuildFile : MesonBuildFile
     string rootBasePackageName() const
     {
         return pkg.name;
-    }
-
-    override PackageRootMesonBuildFile createOrGetMesonBuildFile(NativePath filePath)
-    {
-        return cast(PackageRootMesonBuildFile) super.createOrGetMesonBuildFile(filePath);
     }
 
     ref Section add(Group group, string name, ref return Section sec)
@@ -244,11 +239,11 @@ class PackageRootMesonBuildFile : MesonBuildFile
     }
 }
 
+private PackageRootMesonBuildFile[string] basePackageBuildFiles;
+
 /// Represents root meson.build file for DUB package
 class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
 {
-    private static PackageRootMesonBuildFile[string] basePackageBuildFiles;
-
     package this(in Package pkg, in NativePath fileDir)
     {
         import dub.recipe.packagerecipe: getBasePackageName;
@@ -288,17 +283,26 @@ class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
             //~ ]
         //~ );
     }
+
+    PackageRootMesonBuildFile createSubpackage(in Package pkg, NativePath filePath)
+    {
+        auto created = new PackageRootMesonBuildFile(pkg, filePath);
+
+        children ~= created;
+
+        return created;
+    }
 }
 
-PackageRootMesonBuildFile createMesonFile(in Package pkg, in NativePath fileDir)
+PackageRootMesonBuildFile createPackageMesonFile(in Package pkg, in NativePath fileDir)
 {
     if(pkg.name == pkg.basePackage.name)
         return new BasePackageRootMesonBuildFile(pkg, fileDir);
 
-    auto basePkg = BasePackageRootMesonBuildFile.basePackageBuildFiles.require(
+    auto basePkg = cast(BasePackageRootMesonBuildFile) basePackageBuildFiles.require(
         pkg.basePackage.name,
-        new BasePackageRootMesonBuildFile(pkg, fileDir)
+        new BasePackageRootMesonBuildFile(pkg.basePackage, fileDir)
     );
 
-    return basePkg.createOrGetMesonBuildFile(fileDir);
+    return basePkg.createSubpackage(pkg, fileDir);
 }
