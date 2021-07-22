@@ -109,16 +109,23 @@ class RootMesonBuildFile : MesonBuildFile
     import dub.package_: Package;
 
     const Package pkg;
-    const string rootBasePackageName;
 
-    this(in Package _pkg, in NativePath fileDir, in string _rootBasePackageName)
+    this(in Package pkg, in NativePath fileDir, in string _rootBasePackageName)
     {
+        import dub.recipe.packagerecipe: getBasePackageName;
+
+        assert(pkg.name == pkg.name.getBasePackageName, `Only base packages can be represented by root meson.build file`);
+        this.pkg = pkg;
+
         super(fileDir);
 
-        pkg = _pkg;
-        rootBasePackageName = _rootBasePackageName;
-
         allMesonBuildFiles[fileDir] = this;
+    }
+
+    //TODO: remove
+    string rootBasePackageName() const
+    {
+        return pkg.name;
     }
 
     ref Section add(Group group, string name, ref return Section sec)
