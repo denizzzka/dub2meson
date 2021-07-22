@@ -112,33 +112,6 @@ void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
 {
     immutable bool isSubPackage = pkg.parentPackage !is null;
 
-    // Adding project()
-    {
-        auto project = meson_build.addFunc(
-            null,
-            null,
-            `project`,
-            [
-                pkg.name.quote,
-                `['d']`,
-            ],
-            [
-                `version`: pkg.recipe.version_,
-                `license`: pkg.recipe.license,
-                `meson_version`: `>=0.58.1`,
-            ]
-        );
-
-        //~ project.addArray(
-            //~ `default_options`.keyword,
-            //~ Bracket.SQUARE,
-            //~ [
-                //~ "FIXME".quote,
-                //~ "FIXME".quote,
-            //~ ]
-        //~ );
-    }
-
     //Collect source files
     void collect(in string[][string] searchPaths, Group grp, string wildcard, bool isSourceFiles = false)
     {

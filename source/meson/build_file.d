@@ -104,13 +104,14 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
     }
 }
 
+/// Represents root meson.build file for DUB package or subpackage
 class RootMesonBuildFile : MesonBuildFile
 {
     import dub.package_: Package;
 
     const Package pkg;
 
-    this(in Package pkg, in NativePath fileDir, in string _rootBasePackageName)
+    this(in Package pkg, in NativePath fileDir, in string _rootBasePackageName /*FIXME: remove*/)
     {
         this.pkg = pkg;
 
@@ -235,5 +236,43 @@ class RootMesonBuildFile : MesonBuildFile
         Lines ret;
 
         return rootSection.toLines(ret, 0).data;
+    }
+}
+
+/// Represents root meson.build file for DUB package
+class PackageRootMesonBuildFile : RootMesonBuildFile
+{
+    this(in Package pkg, in NativePath fileDir)
+    {
+        super(pkg, fileDir, null);
+
+        addProject();
+    }
+
+    private void addProject()
+    {
+        auto project = addFunc(
+            null,
+            null,
+            `project`,
+            [
+                pkg.name.quote,
+                `['d']`,
+            ],
+            [
+                `version`: pkg.recipe.version_,
+                `license`: pkg.recipe.license,
+                `meson_version`: `>=0.58.1`,
+            ]
+        );
+
+        //~ project.addArray(
+            //~ `default_options`.keyword,
+            //~ Bracket.SQUARE,
+            //~ [
+                //~ "FIXME".quote,
+                //~ "FIXME".quote,
+            //~ ]
+        //~ );
     }
 }
