@@ -106,7 +106,7 @@ private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 }
 
 /// Represents root meson.build file for DUB package or subpackage
-class RootMesonBuildFile : MesonBuildFile
+class PackageRootMesonBuildFile : MesonBuildFile
 {
     import dub.package_: Package;
 
@@ -241,7 +241,7 @@ class RootMesonBuildFile : MesonBuildFile
 }
 
 /// Represents root meson.build file for DUB package
-class PackageRootMesonBuildFile : RootMesonBuildFile
+class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
 {
     private static PackageRootMesonBuildFile[string] basePackageBuildFiles;
 

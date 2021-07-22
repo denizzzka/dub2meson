@@ -45,7 +45,7 @@ void fetchAllNonOptionalDependencies(Dub dub)
 void createMesonFiles(Dub dub, in Cfg cfg)
 {
     bool isRootPackage = true;
-    RootMesonBuildFile[string] processedPackages;
+    PackageRootMesonBuildFile[string] processedPackages;
 
     foreach(currPkg; dub.project.getTopologicalPackageList)
     {
@@ -79,7 +79,7 @@ import meson.build_file;
 import meson.primitives;
 import std.stdio;
 
-RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string rootBasePackageName)
+PackageRootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string rootBasePackageName)
 {
     import dub.internal.vibecompat.core.file;
 
@@ -105,10 +105,10 @@ RootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string rootBas
         path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
     }
 
-    return new RootMesonBuildFile(pkg, path);
+    return new PackageRootMesonBuildFile(pkg, path);
 }
 
-void processDubPackage(RootMesonBuildFile meson_build, in Package pkg)
+void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)
 {
     immutable bool isSubPackage = pkg.parentPackage !is null;
 
@@ -226,7 +226,7 @@ struct BuildOptions
 }
 
 //FIXME: remove confName arg?
-void processDependency(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
+void processDependency(PackageRootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     import std.array: array;
     import dub.dependency: PackageDependency;
@@ -276,7 +276,7 @@ void processDependency(RootMesonBuildFile meson_build, in string confName, in Pa
     }
 }
 
-void processExecOrLib(RootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
+void processExecOrLib(PackageRootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     Group grp;
     string func;

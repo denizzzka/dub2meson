@@ -95,9 +95,9 @@ void main(string[] args)
 		dub.createMesonFiles(cfg);
 	}
 
-	import meson.build_file: RootMesonBuildFile;
+	import meson.build_file: PackageRootMesonBuildFile;
 
-	RootMesonBuildFile.rewriteFiles();
+	PackageRootMesonBuildFile.rewriteFiles();
 }
 
 //FIXME: ugly code
