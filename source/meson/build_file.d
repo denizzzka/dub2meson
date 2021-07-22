@@ -90,6 +90,7 @@ class MesonBuildFile
 
 private static MesonBuildFile[NativePath] allMesonBuildFiles;
 
+@disable
 private MesonBuildFile createOrGetMesonBuildFile(in NativePath filePath)
 {
     MesonBuildFile* bf = filePath in allMesonBuildFiles;
