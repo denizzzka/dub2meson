@@ -111,7 +111,7 @@ class RootMesonBuildFile : MesonBuildFile
 
     const Package pkg;
 
-    this(in Package pkg, in NativePath fileDir, in string _rootBasePackageName /*FIXME: remove*/)
+    this(in Package pkg, in NativePath fileDir)
     {
         this.pkg = pkg;
 
@@ -244,7 +244,7 @@ class PackageRootMesonBuildFile : RootMesonBuildFile
 {
     this(in Package pkg, in NativePath fileDir)
     {
-        super(pkg, fileDir, null);
+        super(pkg, fileDir);
 
         addProject();
     }
