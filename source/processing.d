@@ -91,21 +91,20 @@ PackageRootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string 
         return null;
     }
 
-    NativePath path;
+    NativePath resultBasePackagePath;
 
     const isRootPackage = (pkg.basePackage.name == rootBasePackageName);
 
     if(isRootPackage)
-        path = NativePath("./");
+        resultBasePackagePath = NativePath("./");
     else
     {
         const subprojects = NativePath(cfg.subprojectsPath);
-        const relDir = pkg.path.relativeTo(pkg.basePackage.path);
 
-        path = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`)~relDir;
+        resultBasePackagePath = subprojects~`packagefiles`~(pkg.basePackage.path.head.name~`_changes`);
     }
 
-    return createPackageMesonFile(pkg, path);
+    return createPackageMesonFile(pkg, resultBasePackagePath);
 }
 
 void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)

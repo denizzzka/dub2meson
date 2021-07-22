@@ -102,11 +102,15 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
     package this(in Package pkg, in NativePath fileDir)
     {
+        import dub.internal.vibecompat.core.file: relativeTo;
+
         this.pkg = pkg;
 
-        super(fileDir);
+        //Take into consideration subpackage dir:
+        const relDir = fileDir~pkg.path.relativeTo(pkg.basePackage.path);
+        super(relDir);
 
-        allMesonBuildFiles[fileDir] = this;
+        allMesonBuildFiles[relDir] = this;
     }
 
     //TODO: remove
@@ -283,15 +287,15 @@ class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
     }
 }
 
-PackageRootMesonBuildFile createPackageMesonFile(in Package pkg, in NativePath fileDir)
+PackageRootMesonBuildFile createPackageMesonFile(in Package pkg, in NativePath resultBasePackagePath)
 {
     if(pkg.name == pkg.basePackage.name)
-        return new BasePackageRootMesonBuildFile(pkg, fileDir);
+        return new BasePackageRootMesonBuildFile(pkg, resultBasePackagePath);
 
     auto basePkg = cast(BasePackageRootMesonBuildFile) basePackageBuildFiles.require(
         pkg.basePackage.name,
-        new BasePackageRootMesonBuildFile(pkg.basePackage, fileDir)
+        new BasePackageRootMesonBuildFile(pkg.basePackage, resultBasePackagePath)
     );
 
-    return basePkg.createSubpackage(pkg, fileDir);
+    return basePkg.createSubpackage(pkg, resultBasePackagePath);
 }
