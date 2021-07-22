@@ -11,6 +11,8 @@ class MesonBuildFile
     static immutable filename = `meson.build`;
     const NativePath fileDir;
     Section rootSection;
+    private MesonBuildFile[] children;
+    private static MesonBuildFile[NativePath] allMesonBuildFiles;
 
     private this(NativePath _fileDir)
     {
@@ -20,13 +22,17 @@ class MesonBuildFile
         fileDir = _fileDir;
     }
 
-    private MesonBuildFile[] children;
-
     MesonBuildFile createOrGetMesonBuildFile(NativePath filePath)
     {
-        auto ret = .createOrGetMesonFile(filePath);
+        MesonBuildFile* bf = filePath in allMesonBuildFiles;
+
+        if(bf !is null)
+            return *bf;
+
+        MesonBuildFile ret = new MesonBuildFile(filePath);
         children ~= ret;
 
+        allMesonBuildFiles[filePath] = ret;
         return ret;
     }
 
@@ -86,23 +92,6 @@ class MesonBuildFile
             createDirectory(destDir, Yes.recursive);
             std.file.write(destFile.toString, content.data);
         }
-    }
-}
-
-private static MesonBuildFile[NativePath] allMesonBuildFiles;
-
-//FIXME: remove
-private MesonBuildFile createOrGetMesonFile(in NativePath filePath)
-{
-    MesonBuildFile* bf = filePath in allMesonBuildFiles;
-
-    if(bf !is null)
-        return *bf;
-    else
-    {
-        MesonBuildFile n = new MesonBuildFile(filePath);
-        allMesonBuildFiles[filePath] = n;
-        return n;
     }
 }
 
