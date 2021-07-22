@@ -112,9 +112,6 @@ class RootMesonBuildFile : MesonBuildFile
 
     this(in Package pkg, in NativePath fileDir, in string _rootBasePackageName)
     {
-        import dub.recipe.packagerecipe: getBasePackageName;
-
-        assert(pkg.name == pkg.name.getBasePackageName, `Only base packages can be represented by root meson.build file`);
         this.pkg = pkg;
 
         super(fileDir);
