@@ -19,23 +19,20 @@ void createWrapFile(in string pkgDepName)
     if(cfg.verbose)
         writefln("Write wrap file for package '%s' ('%s')", pkgDepName, wrapFilePath);
 
-    if(!cfg.annotate)
-    {
-	import meson.fs: rewriteFile;
+    import meson.fs: rewriteFile;
 
-        const wd = pkgDepName in wrapData;
-        enforce(wd !is null);
+    const wd = pkgDepName in wrapData;
+    enforce(wd !is null);
 
-        with(wd)
-        wrapFilePath.rewriteFile(
-            "[wrap-file]\n"~
-            //~ `directory = `~packageId~'\n'~
-            `source_url = `~url~'\n'~
-            `source_filename = `~filename~'\n'~
-            `source_hash = `~source_hash~'\n'~
-            `patch_directory = `~packageId~"_changes\n"
-        );
-    }
+    with(wd)
+    wrapFilePath.rewriteFile(
+	"[wrap-file]\n"~
+	//~ `directory = `~packageId~'\n'~
+	`source_url = `~url~'\n'~
+	`source_filename = `~filename~'\n'~
+	`source_hash = `~source_hash~'\n'~
+	`patch_directory = `~packageId~"_changes\n"
+    );
 }
 
 import dub.packagesuppliers;
