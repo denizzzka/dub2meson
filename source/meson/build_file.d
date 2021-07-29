@@ -78,20 +78,9 @@ class MesonBuildFile
         destDir ~= destDir ~ fileDir;
         const destFile = destDir ~ MesonBuildFile.filename;
 
-        static import std.stdio;
-        static import std.file;
+        import meson.fs: rewriteFile;
 
-        if(cfg.verbose)
-            std.stdio.writeln(`Write file `, destFile.toString.quote);
-
-        if(!cfg.annotate)
-        {
-            import vibe.core.file;
-            import std.typecons: Yes;
-
-            createDirectory(destDir, Yes.recursive);
-            std.file.write(destFile.toString, content.data);
-        }
+        destFile.rewriteFile(content.data);
     }
 }
 
