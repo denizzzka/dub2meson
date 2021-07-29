@@ -6,7 +6,6 @@ import meson.mangling: substForbiddenSymbols;
 import app: cfg;
 import std.stdio;
 import std.exception: enforce;
-import vibe.core.file;
 
 private bool[string] wrappedBasePackages;
 
@@ -22,23 +21,20 @@ void createWrapFile(in string pkgDepName)
 
     if(!cfg.annotate)
     {
-        const dir = wrapFilePath.parentPath;
-
-        if(!dir.existsFile)
-            dir.createDirectory;
+	import meson.fs: rewriteFile;
 
         const wd = pkgDepName in wrapData;
         enforce(wd !is null);
 
         with(wd)
-        wrapFilePath.writeFile(cast(const ubyte[])(
+        wrapFilePath.rewriteFile(
             "[wrap-file]\n"~
             //~ `directory = `~packageId~'\n'~
             `source_url = `~url~'\n'~
             `source_filename = `~filename~'\n'~
             `source_hash = `~source_hash~'\n'~
             `patch_directory = `~packageId~"_changes\n"
-        ));
+        );
     }
 }
 
@@ -92,9 +88,10 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
         super(registry);
     }
 
-	override void fetchPackage(NativePath path, string packageId, Dependency dep, bool pre_release)
-	{
+    override void fetchPackage(NativePath path, string packageId, Dependency dep, bool pre_release)
+    {
         import std.array: split;
+        import meson.fs: calcSha256ForFile;
 
         super.fetchPackage(path, packageId, dep, pre_release);
 
@@ -118,12 +115,4 @@ struct WrapData
     string url;
     string filename;
     string source_hash;
-}
-
-string calcSha256ForFile(NativePath file)
-{
-    import std.digest;
-    import std.digest.sha;
-
-    return file.readFile.sha256Of[].toHexString;
 }
