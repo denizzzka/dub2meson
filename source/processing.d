@@ -81,7 +81,7 @@ import std.stdio;
 
 PackageRootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string rootBasePackageName)
 {
-    import dub.internal.vibecompat.core.file;
+    import dub.internal.vibecompat.core.file: existsFile;
 
     if(!cfg.overrideMesonBuildFiles && pkg.path.existsFile)
     {
