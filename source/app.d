@@ -72,12 +72,11 @@ void main(string[] args)
 	{
 		// Fetching all dependencies into temporary package manager to obtain all versions and URLs
 
+		import meson.fs: TmpDir;
 		import dub.packagemanager: PackageManager;
-		import vibe.core.file: createDirectory;
 
-		auto tmpPath = NativePath(`/tmp/dub.repo.`~randomString);
-		tmpPath.createDirectory;
-		//FIXME: remove tmp dir after using
+		auto tmpDir = new TmpDir;
+		scope(exit) tmpDir.removeDir;
 
 		if(cfg.verbose)
 		{
@@ -87,7 +86,7 @@ void main(string[] args)
 			//~ setLogLevel = LogLevel.debug_;
 		}
 
-		auto pm = new PackageManager(tmpPath, tmpPath, tmpPath, PlacementLocation.local, false);
+		auto pm = new PackageManager(tmpDir, tmpDir, tmpDir, PlacementLocation.local, false);
 		auto dub = createDub(cfg, pm, PlacementLocation.local, false);
 		dub.fetchAllNonOptionalDependencies;
 
@@ -98,16 +97,4 @@ void main(string[] args)
 	import meson.build_file: PackageRootMesonBuildFile;
 
 	PackageRootMesonBuildFile.rewriteFiles();
-}
-
-//FIXME: ugly code
-private string randomString()
-{
-	import vibe.crypto.cryptorand;
-	import std.digest;
-
-	ubyte[8] buf;
-	secureRNG.read(buf);
-
-	return buf[].toHexString;
 }
