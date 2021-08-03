@@ -280,11 +280,15 @@ PackageRootMesonBuildFile createPackageMesonFile(in Package pkg, in NativePath r
 {
     if(pkg.name == pkg.basePackage.name)
         return new BasePackageRootMesonBuildFile(pkg, resultBasePackagePath);
+    else
+    {
+        // Creating subpackage
 
-    auto basePkg = cast(BasePackageRootMesonBuildFile) basePackageBuildFiles.require(
-        pkg.basePackage.name,
-        new BasePackageRootMesonBuildFile(pkg.basePackage, resultBasePackagePath)
-    );
+        auto basePkg = cast(BasePackageRootMesonBuildFile) basePackageBuildFiles.require(
+            pkg.basePackage.name,
+            new BasePackageRootMesonBuildFile(pkg.basePackage, resultBasePackagePath)
+        );
 
-    return basePkg.createSubpackage(pkg, resultBasePackagePath);
+        return basePkg.createSubpackage(pkg, resultBasePackagePath);
+    }
 }
