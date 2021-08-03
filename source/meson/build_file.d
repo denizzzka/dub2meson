@@ -143,8 +143,11 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
     private void addSubproject(string name, string[] default_options, string version_)
     {
+        import dub.recipe.packagerecipe: getBasePackageName;
+
         immutable grp = Group.subprojects;
 
+        // Already added?
         if(getSectionOrNull(grp, name) !is null)
             return;
 
@@ -184,17 +187,21 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
         createWrapFile(name);
 
-        addSubproject(name, null, null);
+        // Isn't need to add base package as subproject
+        if(name.getBasePackageName != pkg.basePackage.name)
+        {
+            addSubproject(name, null, null);
 
-        addOneLineDirective(
-            Group.external_dependencies,
-            name,
-            `%s = %s.get_variable('%s')`.format(
-                name.mangle(Group.dependencies),
-                name.mangle(Group.subprojects),
-                name.mangle(Group.dependencies),
-            )
-        );
+            addOneLineDirective(
+                Group.external_dependencies,
+                name,
+                `%s = %s.get_variable('%s')`.format(
+                    name.mangle(Group.dependencies),
+                    name.mangle(Group.subprojects),
+                    name.mangle(Group.dependencies),
+                )
+            );
+        }
     }
 
     private void addOneLineDirective(Group grp, string name, string oneline)
