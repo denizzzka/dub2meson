@@ -5,6 +5,7 @@ import meson.primitives;
 import meson.mangling: mangle, substForbiddenSymbols;
 import app: cfg;
 import dub.package_: Package;
+import std.format: format;
 
 class MesonBuildFile
 {
@@ -167,7 +168,6 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
     void addExternalDependency(in PackageDependency pkgDep)
     {
-        import std.format: format;
         import meson.wrap: createWrapFile;
         import dub.recipe.packagerecipe: getBasePackageName;
 
@@ -268,9 +268,19 @@ class BasePackageRootMesonBuildFile : PackageRootMesonBuildFile
 
     PackageRootMesonBuildFile createSubpackage(in Package pkg, NativePath filePath)
     {
+        import vibe.core.path: relativeTo;
+
         auto created = new PackageRootMesonBuildFile(pkg, filePath);
 
         children ~= created;
+
+        const relPath = pkg.path.relativeTo(this.pkg.path);
+
+        addOneLineDirective(
+            Group.subdirs,
+            pkg.name,
+            `subdir('%s') #DUB subpackage %s`.format(relPath.toString, pkg.name)
+        );
 
         return created;
     }
