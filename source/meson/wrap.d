@@ -16,8 +16,10 @@ void createWrapFile(in string pkgDepName)
 
     auto wrapFilePath = cfg.directSubprojectsDir~(pkgDepName.substForbiddenSymbols~`.wrap`);
 
+    const ver = wrapData[pkgDepName].version_;
+
     if(cfg.verbose)
-        writefln("Write wrap file for package '%s' ('%s')", pkgDepName, wrapFilePath);
+        writefln("Write wrap file for package '%s' %s ('%s')", pkgDepName, ver, wrapFilePath);
 
     import meson.fs: rewriteFile;
 
@@ -27,7 +29,7 @@ void createWrapFile(in string pkgDepName)
     with(wd)
     wrapFilePath.rewriteFile(
 	"[wrap-file]\n"~
-	//~ `directory = `~packageId~'\n'~
+	`directory = `~pkgDirName~'\n'~
 	`source_url = `~url~'\n'~
 	`source_filename = `~filename~'\n'~
 	`source_hash = `~source_hash~'\n'~
@@ -90,9 +92,17 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
         import std.array: split;
         import meson.fs: calcSha256ForFile;
 
+        WrapData wd;
+
+	{
+	    //fetch best match version only
+	    const recipe = super.fetchPackageRecipe(packageId, dep, pre_release);
+	    wd.version_ = recipe[`version`].get!string;
+	}
+
         super.fetchPackage(path, packageId, dep, pre_release);
 
-        WrapData wd;
+	wd.rootDirName = path.getZipArchRootDirName;
         wd.packageId = packageId;
         wd.url = genPackageDownloadUrl(packageId, dep, pre_release).toString;
         wd.source_hash = path.calcSha256ForFile;
@@ -104,12 +114,33 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
     }
 }
 
+private string getZipArchRootDirName(in NativePath filepath)
+{
+    import std.zip;
+    import vibe.core.file;
+    import vibe.core.path;
+
+    auto zip = new ZipArchive(filepath.readFile);
+
+    const anyArchPath = zip.directory.byValue.front.name;
+    const firstSegment = anyArchPath.NativePath.bySegment.front;
+
+    return firstSegment.toString;
+}
+
 private WrapData[string] wrapData;
 
 struct WrapData
 {
-    string packageId;
+    string packageId; //i.e. "vibe-d"
     string url;
     string filename;
     string source_hash;
+    string rootDirName; //i.e. "vibe.d"
+    string version_;
+
+    string pkgDirName() const
+    {
+	return rootDirName;
+    }
 }
