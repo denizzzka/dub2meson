@@ -16,10 +16,8 @@ void createWrapFile(in string pkgDepName)
 
     auto wrapFilePath = cfg.directSubprojectsDir~(pkgDepName.substForbiddenSymbols~`.wrap`);
 
-    const ver = wrapData[pkgDepName].version_;
-
     if(cfg.verbose)
-        writefln("Write wrap file for package '%s' %s ('%s')", pkgDepName, ver, wrapFilePath);
+        writefln("Write wrap file for package '%s' ('%s')", pkgDepName, wrapFilePath);
 
     import meson.fs: rewriteFile;
 
@@ -92,16 +90,9 @@ class RegistryMesonSubprojectSupplier : RegistryPackageSupplier
         import std.array: split;
         import meson.fs: calcSha256ForFile;
 
-        WrapData wd;
-
-	{
-	    //fetch best match version only
-	    const recipe = super.fetchPackageRecipe(packageId, dep, pre_release);
-	    wd.version_ = recipe[`version`].get!string;
-	}
-
         super.fetchPackage(path, packageId, dep, pre_release);
 
+        WrapData wd;
 	wd.rootDirName = path.getZipArchRootDirName;
         wd.packageId = packageId;
         wd.url = genPackageDownloadUrl(packageId, dep, pre_release).toString;
@@ -137,7 +128,6 @@ struct WrapData
     string filename;
     string source_hash;
     string rootDirName; //i.e. "vibe.d"
-    string version_;
 
     string pkgDirName() const
     {
