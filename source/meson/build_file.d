@@ -214,7 +214,7 @@ class PackageRootMesonBuildFile : MesonBuildFile
         }
     }
 
-    private void addOneLineDirective(Group grp, string name, string oneline)
+    package void addOneLineDirective(Group grp, string name, string oneline)
     {
         auto sec = new Section;
         sec.add = new UnsortedLines([oneline], false);
