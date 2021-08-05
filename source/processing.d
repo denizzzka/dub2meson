@@ -39,7 +39,7 @@ Dub createDub(in Cfg cfg, PackageManager packageManager, PlacementLocation pl, i
 void fetchAllNonOptionalDependencies(Dub dub)
 {
     if(!dub.project.hasAllDependencies)
-        dub.upgrade(UpgradeOptions.none, dub.project.missingDependencies);
+        dub.upgrade(UpgradeOptions.select, dub.project.missingDependencies);
 }
 
 void createMesonFiles(in Dub dub, in Cfg cfg)
