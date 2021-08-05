@@ -169,7 +169,7 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
     import dub.dependency: PackageDependency;
 
-    void addExternalDependency(in PackageDependency pkgDep)
+    void addExternalDependency(in string confName, in Package pkg, in Package pkgDep)
     {
         import meson.wrap: createWrapFile;
         import dub.recipe.packagerecipe: getBasePackageName;
@@ -198,13 +198,25 @@ class PackageRootMesonBuildFile : MesonBuildFile
 
             if(isNotMesonified)
             {
+                import dub.platform: BuildPlatform;
+                import std.exception: enforce;
+
+                BuildPlatform bp;
+
+                string depConfName = pkg.getSubConfiguration(confName, pkgDep, bp);
+
+                if(depConfName is null)
+                    depConfName = pkgDep.getDefaultConfiguration(bp, /* allow_non_library */ true);
+
+                enforce(depConfName !is null);
+
                 addOneLineDirective(
                     Group.external_dependencies,
                     name,
                     `%s = %s.get_variable('%s')`.format(
                         name.mangle(Group.dependencies),
                         name.mangle(Group.subprojects),
-                        name.mangle(Group.dependencies),
+                        depConfName.mangle(Group.dependencies),
                     )
                 );
             }

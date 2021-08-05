@@ -42,7 +42,7 @@ void fetchAllNonOptionalDependencies(Dub dub)
         dub.upgrade(UpgradeOptions.none, dub.project.missingDependencies);
 }
 
-void createMesonFiles(Dub dub, in Cfg cfg)
+void createMesonFiles(in Dub dub, in Cfg cfg)
 {
     import dub_stuff.dep_tree_iterator: getTopologicalPackageList;
     import meson.well_known: describers;
@@ -78,7 +78,7 @@ void createMesonFiles(Dub dub, in Cfg cfg)
         );
 
         if(meson_build !is null)
-            meson_build.processDubPackage(currPkg);
+            meson_build.processDubPackage(dub.project, currPkg);
 
         processedPackages[currPkg.name] = meson_build;
         isRootPackage = false; // only first package is a root package
@@ -118,7 +118,9 @@ PackageRootMesonBuildFile createMesonFile(in Package pkg, in Cfg cfg, in string 
     return createPackageMesonFile(pkg, resultBasePackagePath);
 }
 
-void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)
+import dub.project: Project;
+
+void processDubPackage(PackageRootMesonBuildFile meson_build, in Project project, in Package pkg)
 {
     immutable bool isSubPackage = pkg.parentPackage !is null;
 
@@ -207,7 +209,7 @@ void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)
                     return;
             }
 
-            processDependencies(meson_build, conf.name, pkg, bo);
+            processDependencies(meson_build, conf.name, project, pkg, bo);
 
             // processExecOrLib can process both executable() and library():
             if(bo.buildExecutable)
@@ -236,7 +238,7 @@ struct BuildOptions
 }
 
 //FIXME: remove confName arg?
-void processDependencies(PackageRootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
+void processDependencies(PackageRootMesonBuildFile meson_build, in string confName, in Project project, in Package pkg, in BuildOptions bo /* FIXME: remove? */)
 {
     import std.array: array;
     import dub.dependency: PackageDependency;
@@ -248,7 +250,9 @@ void processDependencies(PackageRootMesonBuildFile meson_build, in string confNa
     {
         enforce(!(e.name in processedDeps), `Multiple deps with different specs isn't supported for now`);
 
-        meson_build.addExternalDependency(e);
+        const Package depPkg = project.getDependency(e.name, false);
+
+        meson_build.addExternalDependency(confName, pkg, depPkg);
 
         processedDeps[e.name] = true;
     }
