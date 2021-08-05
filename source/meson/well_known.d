@@ -19,18 +19,26 @@ shared static this()
     alias D = WellKnownDescriber;
 
     describers = [
-        D(`vibe-d:data`, (meson_file, packageName){
-            meson_file.addOneLineDirective(
-                Group.external_dependencies,
-                packageName,
-                `%s = %s.get_variable('%s')`.format(
-                    packageName.mangle(Group.dependencies),
-                    packageName.mangle(Group.subprojects),
-                    `vibe_data_dep`,
-                )
-            );
-        }),
+        D(`vibe-d:data`, (f, n) => f.mapDepVar(n, `vibe_data_dep`)),
+        D(`vibe-d:crypto`, (f, n) => f.mapDepVar(n, `vibe_crypto_dep`)),
     ];
+}
+
+private void mapDepVar(PackageRootMesonBuildFile meson_file, string packageName, string external_name)
+{
+    import std.format: format;
+    import meson.mangling: mangle;
+    import meson.primitives: Group;
+
+    meson_file.addOneLineDirective(
+        Group.external_dependencies,
+        packageName,
+        `%s = %s.get_variable('%s')`.format(
+            packageName.mangle(Group.dependencies),
+            packageName.mangle(Group.subprojects),
+            external_name
+        )
+    );
 }
 
 const(string[]) describersNames()
