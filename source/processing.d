@@ -129,18 +129,28 @@ void processDubPackage(PackageRootMesonBuildFile meson_build, in Project project
     {
         import dub_stuff.collect: collectFiles;
 
-        auto collected = collectFiles(pkg.path, searchPaths, wildcard);
+        string[][string] collected;
 
-        foreach(suffix, files; pkg.recipe.buildSettings.sourceFiles)
-            collected[suffix] ~= files;
+        if(isSourceFiles)
+        {
+            collected = collectFiles(pkg.path, searchPaths, wildcard);
+
+            foreach(suffix, files; pkg.recipe.buildSettings.sourceFiles)
+                collected[suffix] ~= files;
+        }
+        else
+        {
+            foreach(k, v; searchPaths)
+                collected[k] = v.dup;
+        }
 
         foreach(prefix, ref paths; collected)
         {
-            if(grp == Group.include_directories)
+            if(!isSourceFiles)
             {
-                // remove file part and '/' from paths
+                // remove '/' from paths
                 foreach(ref p; paths)
-                    p = NativePath(p).parentPath.toString[0 .. $-1];
+                    p = NativePath(p).toString[0 .. $-1];
             }
 
             import std.algorithm.sorting: sort;
