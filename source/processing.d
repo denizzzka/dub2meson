@@ -247,7 +247,6 @@ struct BuildOptions
     bool forceStaticLib;
 }
 
-//FIXME: remove confName arg?
 void processDependencies(PackageRootMesonBuildFile meson_build, in string confName, in Project project, in Package pkg, in BuildOptions bo /* FIXME: remove? */)
 {
     import std.array: array;
