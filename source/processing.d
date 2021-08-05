@@ -253,17 +253,20 @@ void processDependencies(PackageRootMesonBuildFile meson_build, in string confNa
     import dub.dependency: PackageDependency;
 
     const PackageDependency[] depsList = pkg.getAllDependencies();
-    bool[string] processedDeps;
+    PackageDependency[string] processedDeps;
 
     foreach(ref e; depsList)
     {
-        enforce(!(e.name in processedDeps), `Multiple deps with different specs isn't supported for now`);
+        import std.conv: to;
+
+        enforce(!(e.name in processedDeps), `Multiple deps with different specs isn't supported for now: `~
+            processedDeps[e.name].to!string~` and `~e.to!string);
 
         const Package depPkg = project.getDependency(e.name, false);
 
         meson_build.addExternalDependency(confName, pkg, depPkg);
 
-        processedDeps[e.name] = true;
+        processedDeps[e.name] = e;
     }
 
     auto dep = meson_build.addFunc(
