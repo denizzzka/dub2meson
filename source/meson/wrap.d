@@ -116,7 +116,7 @@ private string getZipArchRootDirName(in NativePath filepath)
     const anyArchPath = zip.directory.byValue.front.name;
     const firstSegment = anyArchPath.NativePath.bySegment.front;
 
-    return firstSegment.toString;
+    return firstSegment.name;
 }
 
 private WrapData[string] wrapData;
