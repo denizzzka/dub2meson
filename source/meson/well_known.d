@@ -8,7 +8,7 @@ struct WellKnownDescriber
     void function(PackageRootMesonBuildFile meson_file, string packageName) addLines;
 }
 
-immutable WellKnownDescriber[string] describers;
+immutable WellKnownDescriber[] describers;
 
 shared static this()
 {
@@ -19,7 +19,7 @@ shared static this()
     alias D = WellKnownDescriber;
 
     describers = [
-        `vibe-d:data`: D(`vibe-d:data`, (meson_file, packageName){
+        D(`vibe-d:data`, (meson_file, packageName){
             meson_file.addOneLineDirective(
                 Group.external_dependencies,
                 packageName,
@@ -33,14 +33,22 @@ shared static this()
     ];
 }
 
+const(string[]) describersNames()
+{
+    import std.algorithm;
+    import std.array;
+
+    return describers.map!(a => a.pkgName).array;
+}
+
 bool addLinesForWellKnown(PackageRootMesonBuildFile meson_build, string packageName)
 {
-    const descr = packageName in describers;
+    foreach(ref descr; describers)
+    {
+        descr.addLines(meson_build, packageName);
 
-    if(descr is null)
-        return false;
+        return true;
+    }
 
-    descr.addLines(meson_build, packageName);
-
-    return true;
+    return false;
 }

@@ -45,7 +45,7 @@ void fetchAllNonOptionalDependencies(Dub dub)
 void createMesonFiles(in Dub dub, in Cfg cfg)
 {
     import dub_stuff.dep_tree_iterator: getTopologicalPackageList;
-    import meson.well_known: describers;
+    import meson.well_known: describersNames;
     import std.array: array;
 
     bool isRootPackage = true;
@@ -56,7 +56,7 @@ void createMesonFiles(in Dub dub, in Cfg cfg)
         getTopologicalPackageList(
             dub.project,
             dub.project.rootPackage,
-            describers.byKey.array
+            describersNames
         )
     )
     {
@@ -257,16 +257,16 @@ void processDependencies(PackageRootMesonBuildFile meson_build, in string confNa
 
     foreach(ref e; depsList)
     {
-        import std.conv: to;
-
-        enforce(!(e.name in processedDeps), `Multiple deps with different specs isn't supported for now: `~
-            processedDeps[e.name].to!string~` and `~e.to!string);
+        /*
+           The same package may occur multiple times with possibly
+           different `Dependency` values.
+        */
+        if(e.name in processedDeps) continue;
+        processedDeps[e.name] = e;
 
         const Package depPkg = project.getDependency(e.name, false);
 
         meson_build.addExternalDependency(confName, pkg, depPkg);
-
-        processedDeps[e.name] = e;
     }
 
     auto dep = meson_build.addFunc(
