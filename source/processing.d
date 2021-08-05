@@ -45,6 +45,8 @@ void fetchAllNonOptionalDependencies(Dub dub)
 void createMesonFiles(Dub dub, in Cfg cfg)
 {
     import dub_stuff.dep_tree_iterator: getTopologicalPackageList;
+    import meson.well_known: describers;
+    import std.array: array;
 
     bool isRootPackage = true;
     PackageRootMesonBuildFile[string] processedPackages;
@@ -54,7 +56,7 @@ void createMesonFiles(Dub dub, in Cfg cfg)
         getTopologicalPackageList(
             dub.project,
             dub.project.rootPackage,
-            [/*FIXME: add here already mesonified packages like `vibe-d:data` and `vibe-d:utils`*/]
+            describers.byKey.array
         )
     )
     {

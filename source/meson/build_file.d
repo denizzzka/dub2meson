@@ -185,25 +185,33 @@ class PackageRootMesonBuildFile : MesonBuildFile
         if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
 
-        bool isAlreadyMesonified = false;
-
+        // Describe Meson subproject
+        //
         // Isn't need to add base package as subproject
         if(name.getBasePackageName != pkg.basePackage.name)
         {
+            import meson.well_known: addLinesForWellKnown;
+
             addSubproject(name, null, null);
 
-            addOneLineDirective(
-                Group.external_dependencies,
-                name,
-                `%s = %s.get_variable('%s')`.format(
-                    name.mangle(Group.dependencies),
-                    name.mangle(Group.subprojects),
-                    name.mangle(Group.dependencies),
-                )
-            );
-        }
+            const isNotMesonified = !addLinesForWellKnown(this, pkgDep.name);
 
-        createWrapFile(name, !isAlreadyMesonified);
+            if(isNotMesonified)
+            {
+                addOneLineDirective(
+                    Group.external_dependencies,
+                    name,
+                    `%s = %s.get_variable('%s')`.format(
+                        name.mangle(Group.dependencies),
+                        name.mangle(Group.subprojects),
+                        name.mangle(Group.dependencies),
+                    )
+                );
+            }
+
+            //FIXME: write wrap files after all external dependencies will be processed to avoid to skip non-mesonified subpackages
+            createWrapFile(name, isNotMesonified);
+        }
     }
 
     private void addOneLineDirective(Group grp, string name, string oneline)
