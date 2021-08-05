@@ -185,7 +185,7 @@ class PackageRootMesonBuildFile : MesonBuildFile
         if(getSectionOrNull(Group.external_dependencies, name) !is null)
             return;
 
-        createWrapFile(name);
+        bool isAlreadyMesonified = false;
 
         // Isn't need to add base package as subproject
         if(name.getBasePackageName != pkg.basePackage.name)
@@ -202,6 +202,8 @@ class PackageRootMesonBuildFile : MesonBuildFile
                 )
             );
         }
+
+        createWrapFile(name, !isAlreadyMesonified);
     }
 
     private void addOneLineDirective(Group grp, string name, string oneline)

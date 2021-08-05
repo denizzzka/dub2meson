@@ -9,7 +9,7 @@ import std.exception: enforce;
 
 private bool[string] wrappedBasePackages;
 
-void createWrapFile(in string pkgDepName)
+void createWrapFile(in string pkgDepName, in bool willBePatched)
 {
     if(pkgDepName in wrappedBasePackages) return;
     wrappedBasePackages[pkgDepName] = true;
@@ -31,7 +31,7 @@ void createWrapFile(in string pkgDepName)
 	`source_url = `~url~'\n'~
 	`source_filename = `~filename~'\n'~
 	`source_hash = `~source_hash~'\n'~
-	`patch_directory = `~packageId~"_changes\n"
+	(willBePatched ? (`patch_directory = `~packageId~"_changes\n") : ``)
     );
 }
 
