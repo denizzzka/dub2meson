@@ -196,7 +196,7 @@ void processDubPackage(PackageRootMesonBuildFile meson_build, in Package pkg)
                     return;
             }
 
-            processDependency(meson_build, conf.name, pkg, bo);
+            processDependencies(meson_build, conf.name, pkg, bo);
 
             // processExecOrLib can process both executable() and library():
             if(bo.buildExecutable)
@@ -225,7 +225,7 @@ struct BuildOptions
 }
 
 //FIXME: remove confName arg?
-void processDependency(PackageRootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
+void processDependencies(PackageRootMesonBuildFile meson_build, in string confName, in Package pkg, in BuildOptions bo)
 {
     import std.array: array;
     import dub.dependency: PackageDependency;
