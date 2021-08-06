@@ -64,7 +64,6 @@ class TmpDir
     }
 }
 
-//TODO: rewrite ugly code
 private string randomHexString()
 {
 	import vibe.crypto.cryptorand;
